@@ -1,21 +1,41 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../lib/hooks/useAuth';
+import { ROUTES } from '../lib/constants/routes';
+import type { UserRole } from '../lib/types/database.types';
 
 const RegisterPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { signUp, loading, error } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'Cliente'
+    role: 'client' as UserRole
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log('Form submitted:', formData);
+    setLocalError(null);
+
+    if (formData.password !== formData.confirmPassword) {
+      setLocalError('Las contraseñas no coinciden');
+      return;
+    }
+
+    try {
+      await signUp(formData.email, formData.password);
+      // After successful signup, we'll need to update the user's profile
+      // This will be handled by the auth state change listener in useAuth
+      navigate(ROUTES.DASHBOARD);
+    } catch (error) {
+      console.error('Registration error:', error);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -33,6 +53,12 @@ const RegisterPage: React.FC = () => {
             Crear cuenta
           </h1>
 
+          {(error || localError) && (
+            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
+              {error?.message || localError}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
@@ -46,6 +72,7 @@ const RegisterPage: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                 required
+                disabled={loading}
               />
             </div>
 
@@ -61,6 +88,7 @@ const RegisterPage: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                 required
+                disabled={loading}
               />
             </div>
 
@@ -77,6 +105,7 @@ const RegisterPage: React.FC = () => {
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                   required
+                  disabled={loading}
                 />
                 <button
                   type="button"
@@ -101,6 +130,7 @@ const RegisterPage: React.FC = () => {
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                   required
+                  disabled={loading}
                 />
                 <button
                   type="button"
@@ -123,18 +153,27 @@ const RegisterPage: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                 required
+                disabled={loading}
               >
-                <option value="Business">Negocio</option>
-                <option value="Client">Cliente</option>
+                <option value="business">Negocio</option>
+                <option value="client">Cliente</option>
               </select>
             </div>
 
             <button
               type="submit"
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-md font-medium transition-colors"
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading}
             >
-              Crear cuenta
+              {loading ? 'Creando cuenta...' : 'Crear cuenta'}
             </button>
+
+            <p className="text-center text-gray-600 text-sm">
+              ¿Ya tienes una cuenta?{' '}
+              <Link to={ROUTES.LOGIN} className="text-blue-500 hover:text-blue-600 font-medium">
+                Iniciar sesión
+              </Link>
+            </p>
           </form>
         </div>
       </div>

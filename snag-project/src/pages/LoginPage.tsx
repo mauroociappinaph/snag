@@ -1,18 +1,28 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../lib/hooks/useAuth';
+import { ROUTES } from '../lib/constants/routes';
 
 const LoginPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { signIn, loading, error,  } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log('Form submitted:', formData);
+
+
+    try {
+      await signIn(formData.email, formData.password);
+      navigate(ROUTES.DASHBOARD);
+    } catch (error) {
+      console.error('Login error:', error);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,6 +40,12 @@ const LoginPage: React.FC = () => {
             Bienvenido de nuevo
           </h1>
 
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
+              {error.message}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
@@ -43,6 +59,7 @@ const LoginPage: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                 required
+                disabled={loading}
               />
             </div>
 
@@ -59,6 +76,7 @@ const LoginPage: React.FC = () => {
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                   required
+                  disabled={loading}
                 />
                 <button
                   type="button"
@@ -77,14 +95,15 @@ const LoginPage: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-md font-medium transition-colors"
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading}
             >
-              Iniciar sesión
+              {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
             </button>
 
             <p className="text-center text-gray-600 text-sm">
               ¿No tienes una cuenta?{' '}
-              <Link to="/register" className="text-blue-500 hover:text-blue-600 font-medium">
+              <Link to={ROUTES.REGISTER} className="text-blue-500 hover:text-blue-600 font-medium">
                 Registrarse
               </Link>
             </p>
