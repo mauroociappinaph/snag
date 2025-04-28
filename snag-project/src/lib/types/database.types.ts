@@ -6,6 +6,8 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+export type UserRole = 'admin' | 'business' | 'client';
+
 export interface Database {
   public: {
     Tables: {
@@ -16,7 +18,7 @@ export interface Database {
           email: string
           full_name: string | null
           avatar_url: string | null
-          role: 'admin' | 'business' | 'client'
+          role: UserRole
         }
         Insert: {
           id: string
@@ -24,7 +26,7 @@ export interface Database {
           email: string
           full_name?: string | null
           avatar_url?: string | null
-          role: 'admin' | 'business' | 'client'
+          role: UserRole
         }
         Update: {
           id?: string
@@ -32,7 +34,7 @@ export interface Database {
           email?: string
           full_name?: string | null
           avatar_url?: string | null
-          role?: 'admin' | 'business' | 'client'
+          role?: UserRole
         }
       }
       businesses: {

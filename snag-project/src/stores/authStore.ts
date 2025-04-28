@@ -1,102 +1,112 @@
 import { create } from 'zustand';
-import { supabase } from '../lib/supabase';
+import { persist } from 'zustand/middleware';
+import { supabaseService } from '../lib/supabase/supabaseClient';
 import type { User } from '@supabase/supabase-js';
+import type { Database } from '../lib/types/database.types';
+
+type Profile = Database['public']['Tables']['profiles']['Row'];
+type UserRole = Profile['role'];
 
 interface AuthState {
   user: User | null;
-  profile: {
-    id: string;
-    name: string;
-    role: 'Admin' | 'Business' | 'Client';
-  } | null;
+  profile: Profile | null;
+  isAuthenticated: boolean;
+  role: UserRole | null;
   loading: boolean;
-  signUp: (email: string, password: string, name: string, role: string) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
-  loadProfile: () => Promise<void>;
+  error: string | null;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+interface AuthActions {
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
+  reset: () => void;
+}
+
+const initialState: AuthState = {
   user: null,
   profile: null,
-  loading: true,
-  
-  signUp: async (email: string, password: string, name: string, role: string) => {
-    const { data: { user }, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+  isAuthenticated: false,
+  role: null,
+  loading: false,
+  error: null,
+};
 
-    if (signUpError || !user) {
-      throw signUpError || new Error('Failed to sign up');
-    }
+export const useAuthStore = create<AuthState & AuthActions>()(
+  persist(
+    (set) => ({
+      ...initialState,
 
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .insert([{ id: user.id, name, role }]);
-
-    if (profileError) {
-      throw profileError;
-    }
-
-    await get().loadProfile();
-  },
-
-  signIn: async (email: string, password: string) => {
-    const { data: { user }, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error || !user) {
-      throw error || new Error('Failed to sign in');
-    }
-
-    await get().loadProfile();
-  },
-
-  signOut: async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-    set({ user: null, profile: null });
-  },
-
-  loadProfile: async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      set({ user: null, profile: null, loading: false });
-      return;
-    }
-
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
-    if (error || !profile) {
-      set({ user: null, profile: null, loading: false });
-      return;
-    }
-
-    set({ 
-      user, 
-      profile: {
-        id: profile.id,
-        name: profile.name,
-        role: profile.role as 'Admin' | 'Business' | 'Client'
+      signIn: async (email: string, password: string) => {
+        try {
+          set({ loading: true, error: null });
+          const { error } = await supabaseService.signIn(email, password);
+          if (error) throw error;
+        } catch (error) {
+          set({ error: (error as Error).message });
+        } finally {
+          set({ loading: false });
+        }
       },
-      loading: false 
-    });
-  }
-}));
 
-// Initialize auth state
-supabase.auth.onAuthStateChange((event, session) => {
+      signUp: async (email: string, password: string) => {
+        try {
+          set({ loading: true, error: null });
+          const { error } = await supabaseService.signUp(email, password);
+          if (error) throw error;
+        } catch (error) {
+          set({ error: (error as Error).message });
+        } finally {
+          set({ loading: false });
+        }
+      },
+
+      signOut: async () => {
+        try {
+          set({ loading: true, error: null });
+          const { error } = await supabaseService.signOut();
+          if (error) throw error;
+          set(initialState);
+        } catch (error) {
+          set({ error: (error as Error).message });
+        } finally {
+          set({ loading: false });
+        }
+      },
+
+      setLoading: (loading: boolean) => set({ loading }),
+      setError: (error: string | null) => set({ error }),
+      reset: () => set(initialState),
+    }),
+    {
+      name: 'auth-storage',
+      partialize: (state) => ({
+        user: state.user,
+        profile: state.profile,
+        isAuthenticated: state.isAuthenticated,
+        role: state.role,
+      }),
+    }
+  )
+);
+
+// Subscribe to auth state changes
+supabaseService.getClient().auth.onAuthStateChange(async (event, session) => {
   if (session?.user) {
-    useAuthStore.getState().loadProfile();
+    try {
+      const { data: profile } = await supabaseService.getUserProfile(session.user.id);
+      useAuthStore.setState({
+        user: session.user,
+        profile,
+        isAuthenticated: true,
+        role: profile?.role ?? null,
+      });
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
   } else {
-    useAuthStore.setState({ user: null, profile: null, loading: false });
+    useAuthStore.setState(initialState);
   }
 });
