@@ -7,7 +7,7 @@ const RegisterPage: React.FC = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'Business'
+    role: 'Cliente'
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -30,13 +30,13 @@ const RegisterPage: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-md mx-auto bg-white rounded-xl shadow-md p-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-            Create your account
+            Crear cuenta
           </h1>
-          
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                Full Name
+                Nombre completo
               </label>
               <input
                 type="text"
@@ -51,7 +51,7 @@ const RegisterPage: React.FC = () => {
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email Address
+                Correo electrónico
               </label>
               <input
                 type="email"
@@ -66,7 +66,7 @@ const RegisterPage: React.FC = () => {
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Password
+                Contraseña
               </label>
               <div className="relative">
                 <input
@@ -90,7 +90,7 @@ const RegisterPage: React.FC = () => {
 
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                Confirm Password
+                Confirmar contraseña
               </label>
               <div className="relative">
                 <input
@@ -114,7 +114,7 @@ const RegisterPage: React.FC = () => {
 
             <div>
               <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-                Role
+                Rol
               </label>
               <select
                 id="role"
@@ -124,9 +124,8 @@ const RegisterPage: React.FC = () => {
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                 required
               >
-                <option value="Admin">Admin</option>
-                <option value="Business">Business</option>
-                <option value="Client">Client</option>
+                <option value="Business">Negocio</option>
+                <option value="Client">Cliente</option>
               </select>
             </div>
 
@@ -134,7 +133,7 @@ const RegisterPage: React.FC = () => {
               type="submit"
               className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-md font-medium transition-colors"
             >
-              Create Account
+              Crear cuenta
             </button>
           </form>
         </div>
