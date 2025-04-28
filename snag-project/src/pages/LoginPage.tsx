@@ -27,13 +27,13 @@ const LoginPage: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-md mx-auto bg-white rounded-xl shadow-md p-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-            Welcome back
+            Bienvenido de nuevo
           </h1>
-          
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email Address
+                Correo electrónico
               </label>
               <input
                 type="email"
@@ -48,7 +48,7 @@ const LoginPage: React.FC = () => {
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Password
+                Contraseña
               </label>
               <div className="relative">
                 <input
@@ -70,7 +70,7 @@ const LoginPage: React.FC = () => {
               </div>
               <div className="flex justify-end mt-1">
                 <a href="#" className="text-sm text-blue-500 hover:text-blue-600">
-                  Forgot password?
+                  ¿Olvidaste tu contraseña?
                 </a>
               </div>
             </div>
@@ -79,13 +79,13 @@ const LoginPage: React.FC = () => {
               type="submit"
               className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-md font-medium transition-colors"
             >
-              Sign In
+              Iniciar sesión
             </button>
 
             <p className="text-center text-gray-600 text-sm">
-              Don't have an account?{' '}
+              ¿No tienes una cuenta?{' '}
               <Link to="/register" className="text-blue-500 hover:text-blue-600 font-medium">
-                Sign up
+                Registrarse
               </Link>
             </p>
           </form>
