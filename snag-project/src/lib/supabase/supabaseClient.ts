@@ -6,26 +6,53 @@ class SupabaseService {
   private static instance: SupabaseService;
   private client: SupabaseClient<Database>;
 
+  private validateUrl(url: string): boolean {
+    try {
+      new URL(url);
+      return true;
+    } catch (e) {
+      console.error('Invalid Supabase URL format:', e);
+      return false;
+    }
+  }
+
   private constructor() {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+    console.log('Initializing Supabase client with:', {
+      url: supabaseUrl ? 'URL present' : 'URL missing',
+      key: supabaseAnonKey ? 'Key present' : 'Key missing'
+    });
+
     if (!supabaseUrl || !supabaseAnonKey) {
+      console.error('Missing Supabase environment variables');
       throw new Error('Missing Supabase environment variables');
     }
 
-    this.client = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-      },
-      global: {
-        headers: {
-          'X-Client-Info': 'snag-web'
+    if (!this.validateUrl(supabaseUrl)) {
+      console.error('Invalid Supabase URL format:', supabaseUrl);
+      throw new Error('Invalid Supabase URL format. URL must start with https:// and be a valid Supabase project URL');
+    }
+
+    try {
+      this.client = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        },
+        global: {
+          headers: {
+            'X-Client-Info': 'snag-web'
+          }
         }
-      }
-    });
+      });
+      console.log('Supabase client initialized successfully');
+    } catch (error) {
+      console.error('Error initializing Supabase client:', error);
+      throw error;
+    }
   }
 
   public static getInstance(): SupabaseService {
@@ -41,19 +68,47 @@ class SupabaseService {
 
   // Auth methods
   public async signIn(email: string, password: string) {
-    return this.client.auth.signInWithPassword({ email, password });
+    try {
+      const result = await this.client.auth.signInWithPassword({ email, password });
+      console.log('Sign in result:', result.error ? 'Error occurred' : 'Success');
+      return result;
+    } catch (error) {
+      console.error('Error in signIn:', error);
+      throw error;
+    }
   }
 
   public async signUp(email: string, password: string) {
-    return this.client.auth.signUp({ email, password });
+    try {
+      const result = await this.client.auth.signUp({ email, password });
+      console.log('Sign up result:', result.error ? 'Error occurred' : 'Success');
+      return result;
+    } catch (error) {
+      console.error('Error in signUp:', error);
+      throw error;
+    }
   }
 
   public async signOut() {
-    return this.client.auth.signOut();
+    try {
+      const result = await this.client.auth.signOut();
+      console.log('Sign out result:', result.error ? 'Error occurred' : 'Success');
+      return result;
+    } catch (error) {
+      console.error('Error in signOut:', error);
+      throw error;
+    }
   }
 
   public async getSession() {
-    return this.client.auth.getSession();
+    try {
+      const result = await this.client.auth.getSession();
+      console.log('Get session result:', result.error ? 'Error occurred' : 'Session found');
+      return result;
+    } catch (error) {
+      console.error('Error in getSession:', error);
+      throw error;
+    }
   }
 
   // Data methods
