@@ -1,0 +1,62 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Rules for Snag
+
+## 1. TypeScript Usage
+- **All functions and components must have explicit types**.
+- **Use interfaces for props and state** instead of inline types whenever possible.
+
+## 2. Using Zustand for Global State Management
+- **Use Zustand** to manage the global state of the application.
+- **Keep the state in a separate, modular file**, under the `state/` folder or similar.
+
+## 3. File Modularization
+- **Files must be modularized according to their responsibilities**, following an organized folder structure such as `pages/`, `components/`, `hooks/`, `utils/`, etc.
+- **Each file should not exceed 200 lines of code**.
+- **Each function should have a single responsibility** (Single Responsibility Principle).
+
+## 4. TypeScript Interfaces in Separate Files
+- **TypeScript interfaces should be in separate files** named `interfaces.ts` or similar.
+- **Each component should have its own interface file**.
+
+## 5. Avoiding Repetitive Code
+- **Avoid code duplication** that performs the same task, by using reusable functions or custom hooks.
+
+## 6. Use Next.js Link for Routing
+- **All routes should use the `Link` component from Next.js** for internal navigation.
+
+## 7. Proper Error Handling
+- **Implement global error handlers** to capture and log unexpected errors.
+- **Use custom error pages** (`pages/404.tsx`, `pages/500.tsx`) to improve user experience.
+- **Ensure all API calls are wrapped in `try/catch` blocks** to handle errors effectively.
+
+## 8. Image and Static Asset Optimization
+- **Use the `next/image` component** for automatic image optimization, improving performance and page load times.
+- **Store images and other static assets in the `public/` folder** and access them via relative paths.
+
+## 9. Testing and Code Coverage
+- **Set up and use tools like Jest and React Testing Library** for unit and integration tests.
+- **Ensure adequate code coverage** for critical components and business logic.
+
+## 10. Code Quality and Style
+- **Integrate ESLint and Prettier** to maintain consistent code style and detect potential issues.
+- **Define specific rules in the `.eslintrc.js` and `.prettierrc` configuration files** as needed for the project.
+
+## 11. Environment Variables Management
+- **Manage sensitive configurations and environment-specific settings through environment variables** defined in `.env.local`, `.env.development`, etc.
+- **Avoid exposing sensitive information in the source code or client-side**.
+
+## 12. Data Fetching Strategies
+- **Leverage Next.js functions like `getStaticProps`, `getServerSideProps`, and `getStaticPaths`** to optimize data fetching for each page’s needs.
+- **Prefer static generation (`getStaticProps`) where possible** for improved performance and scalability.
+
+## 13. Code Reusability and Modularization
+- **Identify and abstract repetitive logic into custom hooks or utility functions** inside the `lib/` or `utils/` folder.
+- **Encourage component reuse and avoid code duplication** to maintain a clean and DRY (Don’t Repeat Yourself) codebase.
+
+## 14. Documentation and Comments
+- **Maintain clear and up-to-date documentation in the `README.md` file**, including installation, usage, and contribution instructions.
+- **Use meaningful comments in the code to explain complex logic or important design decisions**.
