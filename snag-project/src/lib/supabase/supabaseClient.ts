@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '../types/database.types';
+import type { UserRole } from '../types/database.types';
 
 
 class SupabaseService {
@@ -122,6 +123,31 @@ class SupabaseService {
 
   public async getUserProfile(userId: string) {
     return this.client.from('profiles').select('*').eq('id', userId).single();
+  }
+
+  public async createUserProfile(userId: string, email: string, fullName: string, role: UserRole) {
+    return this.client.from('profiles').insert({
+      id: userId,
+      name: fullName,
+      full_name: fullName,
+      email: email,
+      role: role,
+      created_at: new Date().toISOString(),
+    });
+  }
+
+  public async debugProfileStructure() {
+    // Get database structure for profiles table
+    const { data, error } = await this.client.rpc('get_table_columns', {
+      table_name: 'profiles'
+    });
+
+    if (error) {
+      console.error('Error getting table structure:', error);
+      return null;
+    }
+
+    return data;
   }
 }
 

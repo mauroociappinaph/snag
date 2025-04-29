@@ -10,9 +10,16 @@ import ProfilePage from './pages/ProfilePage';
 import BusinessDashboardPage from './pages/BusinessDashboardPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 
+// Create router with future flag enabled
+const router = {
+  future: {
+    v7_relativeSplatPath: true
+  }
+};
+
 function App() {
   return (
-    <Router>
+    <Router future={router.future}>
       <Routes>
         <Route element={<Layout />}>
           {/* Rutas públicas */}

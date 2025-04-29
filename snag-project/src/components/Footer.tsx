@@ -11,7 +11,7 @@ const Footer: React.FC = () => {
               <Calendar className="h-6 w-6 text-blue-500" />
               <span className="ml-2 text-xl font-bold text-white">Snag</span>
             </div>
-            <p className="mb-4">Simplified booking for service businesses.</p>
+            <p className="mb-4">Gestiona tus reservas de manera sencilla.</p>
             <div className="flex space-x-4">
               <a href="#" className="text-gray-400 hover:text-white transition-colors">
                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -30,17 +30,9 @@ const Footer: React.FC = () => {
               </a>
             </div>
           </div>
-          
-          <div>
-            <h3 className="text-white font-medium mb-4">Product</h3>
-            <ul className="space-y-2">
-              <li><a href="#" className="hover:text-white transition-colors">Features</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Integrations</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Customers</a></li>
-            </ul>
-          </div>
-          
+
+
+
           <div>
             <h3 className="text-white font-medium mb-4">Resources</h3>
             <ul className="space-y-2">
@@ -50,25 +42,12 @@ const Footer: React.FC = () => {
               <li><a href="#" className="hover:text-white transition-colors">Support</a></li>
             </ul>
           </div>
-          
-          <div>
-            <h3 className="text-white font-medium mb-4">Company</h3>
-            <ul className="space-y-2">
-              <li><a href="#" className="hover:text-white transition-colors">About</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Legal</a></li>
-            </ul>
-          </div>
+
+
         </div>
-        
+
         <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p>&copy; 2025 Snag. All rights reserved.</p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
-            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-white transition-colors">Cookie Policy</a>
-          </div>
+          <p>&copy; {new Date().getFullYear()} Snag. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>
