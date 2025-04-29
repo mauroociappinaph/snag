@@ -69,45 +69,75 @@ class SupabaseService {
 
   // Auth methods
   public async signIn(email: string, password: string) {
+    console.log('SupabaseService: signIn called for email:', email);
     try {
       const result = await this.client.auth.signInWithPassword({ email, password });
-      console.log('Sign in result:', result.error ? 'Error occurred' : 'Success');
+      console.log('SupabaseService: Sign in result:', {
+        success: !result.error,
+        user: result.data?.user ? 'User exists' : 'No user',
+        error: result.error ? result.error.message : null
+      });
       return result;
     } catch (error) {
-      console.error('Error in signIn:', error);
+      console.error('SupabaseService: Error in signIn:', error);
       throw error;
     }
   }
 
   public async signUp(email: string, password: string) {
+    console.log('SupabaseService: signUp called for email:', email);
     try {
       const result = await this.client.auth.signUp({ email, password });
-      console.log('Sign up result:', result.error ? 'Error occurred' : 'Success');
+      console.log('SupabaseService: Sign up result:', {
+        success: !result.error,
+        user: result.data?.user ? 'User created' : 'No user created',
+        userId: result.data?.user?.id || null,
+        errorMessage: result.error?.message || null
+      });
+
+      // Check session after signup
+      if (result.data?.user) {
+        const sessionResult = await this.getSession();
+        console.log('SupabaseService: Session after signup:', {
+          hasSession: !!sessionResult.data.session,
+          user: sessionResult.data.session?.user ? 'User in session' : 'No user in session'
+        });
+      }
+
       return result;
     } catch (error) {
-      console.error('Error in signUp:', error);
+      console.error('SupabaseService: Error in signUp:', error);
       throw error;
     }
   }
 
   public async signOut() {
+    console.log('SupabaseService: signOut called');
     try {
       const result = await this.client.auth.signOut();
-      console.log('Sign out result:', result.error ? 'Error occurred' : 'Success');
+      console.log('SupabaseService: Sign out result:', {
+        success: !result.error,
+        error: result.error ? result.error.message : null
+      });
       return result;
     } catch (error) {
-      console.error('Error in signOut:', error);
+      console.error('SupabaseService: Error in signOut:', error);
       throw error;
     }
   }
 
   public async getSession() {
+    console.log('SupabaseService: getSession called');
     try {
       const result = await this.client.auth.getSession();
-      console.log('Get session result:', result.error ? 'Error occurred' : 'Session found');
+      console.log('SupabaseService: Get session result:', {
+        hasSession: !!result.data.session,
+        user: result.data.session?.user ? 'User exists' : 'No user',
+        error: result.error ? result.error.message : null
+      });
       return result;
     } catch (error) {
-      console.error('Error in getSession:', error);
+      console.error('SupabaseService: Error in getSession:', error);
       throw error;
     }
   }
@@ -122,11 +152,19 @@ class SupabaseService {
   }
 
   public async getUserProfile(userId: string) {
-    return this.client.from('profiles').select('*').eq('id', userId).single();
+    console.log('SupabaseService: getUserProfile called for userId:', userId);
+    const result = await this.client.from('profiles').select('*').eq('id', userId).single();
+    console.log('SupabaseService: getUserProfile result:', {
+      success: !result.error,
+      hasData: !!result.data,
+      error: result.error ? result.error.message : null
+    });
+    return result;
   }
 
   public async createUserProfile(userId: string, email: string, fullName: string, role: UserRole) {
-    return this.client.from('profiles').insert({
+    console.log('SupabaseService: createUserProfile called with:', { userId, email, fullName, role });
+    const result = await this.client.from('profiles').insert({
       id: userId,
       name: fullName,
       full_name: fullName,
@@ -134,6 +172,13 @@ class SupabaseService {
       role: role,
       created_at: new Date().toISOString(),
     });
+
+    console.log('SupabaseService: createUserProfile result:', {
+      success: !result.error,
+      error: result.error ? result.error.message : null
+    });
+
+    return result;
   }
 
   public async debugProfileStructure() {

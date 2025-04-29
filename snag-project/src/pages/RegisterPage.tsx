@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../lib/hooks/useAuth';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../lib/hooks/useAuthStore';
 import { ROUTES } from '../lib/constants/routes';
 import type { UserRole } from '../lib/types/database.types';
 import { supabaseService } from '../lib/supabase/supabaseClient';
 
 const RegisterPage: React.FC = () => {
-  const navigate = useNavigate();
-  const { loading: authLoading, error: authError } = useAuth();
+  console.log('RegisterPage rendering');
+  const { loading: authLoading, error: authError, signOut, isAuthenticated, user, profile } = useAuth();
+  console.log('Auth state:', {
+    authLoading,
+    authError,
+    isAuthenticated,
+    userId: user?.id,
+    profile: profile ? `profile exists with role ${profile.role}` : 'no profile'
+  });
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -20,30 +28,38 @@ const RegisterPage: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [registrationSuccess, setRegistrationSuccess] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [registrationAttempted, setRegistrationAttempted] = useState(false);
 
-  // Effect for redirection on successful registration
+  // Verificar si hay un usuario ya autenticado
   useEffect(() => {
-    if (registrationSuccess && userId && userRole) {
-      console.log('Registration successful, redirecting to dashboard for role:', userRole);
-
-      // Immediate redirect based on role
-      if (userRole === 'business') {
-        navigate(ROUTES.BUSINESS_DASHBOARD);
-      } else if (userRole === 'admin') {
-        navigate(ROUTES.ADMIN_DASHBOARD);
-      } else {
-        navigate(ROUTES.DASHBOARD);
-      }
+    if (isAuthenticated && user && !registrationAttempted) {
+      console.log('Already authenticated user detected, showing warning.');
+      setLocalError('Ya hay una sesión activa. Por favor, cierra sesión antes de registrar una nueva cuenta.');
     }
-  }, [registrationSuccess, userId, userRole, navigate]);
+  }, [isAuthenticated, user, registrationAttempted]);
+
+  console.log('Current component state:', {
+    isLoading,
+    registrationAttempted,
+    localError
+  });
+
+  const handleSignOut = async () => {
+    try {
+      console.log('Signing out current user before registration');
+      await signOut();
+      setLocalError(null);
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted with data:', { ...formData, password: '***' });
     setLocalError(null);
     setIsLoading(true);
+    setRegistrationAttempted(true);
 
     if (formData.password !== formData.confirmPassword) {
       setLocalError('Las contraseñas no coinciden');
@@ -51,16 +67,28 @@ const RegisterPage: React.FC = () => {
       return;
     }
 
+    const selectedRole = formData.role;
+
     try {
+      console.log('Attempting to sign up user with email:', formData.email);
+
       // 1. Sign up the user in Supabase Auth
       const { data: authData, error: signUpError } = await supabaseService.signUp(
         formData.email,
         formData.password
       );
 
+      console.log('Sign up response:', {
+        success: !!authData,
+        hasUser: !!authData?.user,
+        hasError: !!signUpError,
+        errorMessage: signUpError?.message
+      });
+
       if (signUpError) {
         // Handle the specific case of already registered user
         if (signUpError.message.includes('User already registered')) {
+          console.log('User already registered error detected');
           setLocalError('Este correo electrónico ya está registrado. Por favor usa otro o inicia sesión.');
           setIsLoading(false);
           return;
@@ -69,6 +97,9 @@ const RegisterPage: React.FC = () => {
       }
 
       if (authData?.user) {
+        console.log('User created successfully, ID:', authData.user.id);
+        console.log('Now creating profile with role:', formData.role);
+
         // 2. Create user profile with name and role
         const { error: profileError } = await supabaseService.createUserProfile(
           authData.user.id,
@@ -88,14 +119,21 @@ const RegisterPage: React.FC = () => {
           role: formData.role
         });
 
-        // Store user ID and role for redirection
-        setUserId(authData.user.id);
-        setUserRole(formData.role);
+        // Navegar inmediatamente según el rol seleccionado
+        console.log('Navigating directly based on role:', selectedRole);
 
-        // Mark registration as successful to trigger redirection
-        setRegistrationSuccess(true);
+        if (selectedRole === 'business') {
+          window.location.href = '/business/dashboard';
+        } else if (selectedRole === 'admin') {
+          window.location.href = '/admin/dashboard';
+        } else {
+          window.location.href = '/dashboard';
+        }
+
+        return; // Importante: detener la ejecución aquí para evitar actualizaciones de estado después de la navegación
       } else {
         // If no user was created in the auth step
+        console.error('No user was created in auth step');
         throw new Error('No se pudo crear la cuenta. Por favor, inténtalo de nuevo.');
       }
     } catch (err) {
@@ -112,8 +150,9 @@ const RegisterPage: React.FC = () => {
     });
   };
 
-  // If registration was successful, show a loading state until redirection
-  if (registrationSuccess) {
+  // Si el usuario está en medio del proceso de registro (isLoading es true)
+  if (isLoading && registrationAttempted) {
+    console.log('Rendering loading state');
     return (
       <div className="min-h-screen bg-gradient-to-br from-white to-blue-50 flex items-center justify-center">
         <div className="bg-white rounded-xl shadow-md p-8 max-w-md w-full">
@@ -124,28 +163,31 @@ const RegisterPage: React.FC = () => {
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Cuenta creada exitosamente</h2>
-            <p className="text-gray-600">Redirigiendo al dashboard...</p>
-            <button
-              onClick={() => {
-                if (userRole === 'business') {
-                  navigate(ROUTES.BUSINESS_DASHBOARD);
-                } else if (userRole === 'admin') {
-                  navigate(ROUTES.ADMIN_DASHBOARD);
-                } else {
-                  navigate(ROUTES.DASHBOARD);
-                }
-              }}
-              className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md font-medium"
-            >
-              Ir al dashboard ahora
-            </button>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Creando cuenta...</h2>
+            <p className="text-gray-600">Por favor espera mientras procesamos tu registro.</p>
+            <div className="mt-4 space-y-2">
+              <button
+                onClick={() => {
+                  if (formData.role === 'business') {
+                    window.location.href = '/business/dashboard';
+                  } else if (formData.role === 'admin') {
+                    window.location.href = '/admin/dashboard';
+                  } else {
+                    window.location.href = '/dashboard';
+                  }
+                }}
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md font-medium"
+              >
+                Ir al dashboard manualmente
+              </button>
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
+  console.log('Rendering registration form');
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-blue-50 pt-24 pb-12">
       <div className="container mx-auto px-4">
@@ -154,10 +196,22 @@ const RegisterPage: React.FC = () => {
             Crear cuenta
           </h1>
 
+          {isAuthenticated && !registrationAttempted && (
+            <div className="mb-4 bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded">
+              <p className="mb-2">Ya hay una sesión activa. Debes cerrar sesión antes de crear una nueva cuenta.</p>
+              <button
+                onClick={handleSignOut}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md font-medium w-full"
+              >
+                Cerrar sesión actual
+              </button>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {(authError || localError) && (
               <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
-                {authError instanceof Error ? authError.message : authError || localError}
+                {localError || (authError ? String(authError) : '')}
               </div>
             )}
             <div>
@@ -172,7 +226,7 @@ const RegisterPage: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 required
-                disabled={isLoading || authLoading}
+                disabled={isLoading || authLoading || (isAuthenticated && !registrationAttempted)}
               />
             </div>
 
@@ -188,7 +242,7 @@ const RegisterPage: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                 required
-                disabled={isLoading || authLoading}
+                disabled={isLoading || authLoading || (isAuthenticated && !registrationAttempted)}
               />
             </div>
 
@@ -205,7 +259,7 @@ const RegisterPage: React.FC = () => {
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                   required
-                  disabled={isLoading || authLoading}
+                  disabled={isLoading || authLoading || (isAuthenticated && !registrationAttempted)}
                 />
                 <button
                   type="button"
@@ -230,7 +284,7 @@ const RegisterPage: React.FC = () => {
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                   required
-                  disabled={isLoading || authLoading}
+                  disabled={isLoading || authLoading || (isAuthenticated && !registrationAttempted)}
                 />
                 <button
                   type="button"
@@ -253,7 +307,7 @@ const RegisterPage: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                 required
-                disabled={isLoading || authLoading}
+                disabled={isLoading || authLoading || (isAuthenticated && !registrationAttempted)}
               >
                 <option value="business">Negocio</option>
                 <option value="client">Cliente</option>
@@ -263,7 +317,7 @@ const RegisterPage: React.FC = () => {
             <button
               type="submit"
               className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isLoading || authLoading}
+              disabled={isLoading || authLoading || (isAuthenticated && !registrationAttempted)}
             >
               {isLoading ? 'Creando cuenta...' : 'Crear cuenta'}
             </button>

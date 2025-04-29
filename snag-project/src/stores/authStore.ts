@@ -94,19 +94,39 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
 // Subscribe to auth state changes
 supabaseService.getClient().auth.onAuthStateChange(async (event, session) => {
+  console.log('AUTH STORE: Auth state changed:', { event, userId: session?.user?.id });
+
   if (session?.user) {
+    console.log('AUTH STORE: User authenticated, fetching profile');
     try {
-      const { data: profile } = await supabaseService.getUserProfile(session.user.id);
+      const { data: profile, error } = await supabaseService.getUserProfile(session.user.id);
+
+      if (error) {
+        console.error('AUTH STORE: Error fetching profile:', error);
+      } else {
+        console.log('AUTH STORE: Profile fetched successfully:', {
+          profileExists: !!profile,
+          role: profile?.role
+        });
+      }
+
       useAuthStore.setState({
         user: session.user,
         profile,
         isAuthenticated: true,
         role: profile?.role ?? null,
       });
+
+      console.log('AUTH STORE: State updated with auth data:', {
+        authenticated: true,
+        userId: session.user.id,
+        role: profile?.role ?? null
+      });
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      console.error('AUTH STORE: Error fetching user profile:', error);
     }
   } else {
+    console.log('AUTH STORE: No user in session, resetting state');
     useAuthStore.setState(initialState);
   }
 });
