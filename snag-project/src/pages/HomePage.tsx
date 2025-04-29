@@ -1,7 +1,7 @@
 import React from 'react';
 import Hero from '../components/Hero';
 import Features from '../components/Features';
-import TestimonialSection from '../components/TestimonialSection';
+/* import TestimonialSection from '../components/TestimonialSection'; */
 import CallToAction from '../components/CallToAction';
 
 const HomePage: React.FC = () => {
@@ -9,7 +9,7 @@ const HomePage: React.FC = () => {
     <>
       <Hero />
       <Features />
-      <TestimonialSection />
+      {/* <TestimonialSection /> */}
       <CallToAction />
     </>
   );

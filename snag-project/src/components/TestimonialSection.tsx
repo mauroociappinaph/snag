@@ -1,4 +1,4 @@
-import React from 'react';
+/* import React from 'react';
 import { Star } from 'lucide-react';
 
 const TestimonialSection: React.FC = () => {
@@ -25,7 +25,7 @@ const TestimonialSection: React.FC = () => {
       rating: 5
     }
   ];
-  
+
   return (
     <section className="py-16 md:py-24 bg-gray-50">
       <div className="container mx-auto px-4">
@@ -37,14 +37,14 @@ const TestimonialSection: React.FC = () => {
             See what our customers have to say about Snag.
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
             <div key={index} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-4 mb-4">
-                <img 
-                  src={testimonial.image} 
-                  alt={testimonial.name} 
+                <img
+                  src={testimonial.image}
+                  alt={testimonial.name}
                   className="w-14 h-14 rounded-full object-cover"
                 />
                 <div>
@@ -66,4 +66,4 @@ const TestimonialSection: React.FC = () => {
   );
 };
 
-export default TestimonialSection;
+export default TestimonialSection; */

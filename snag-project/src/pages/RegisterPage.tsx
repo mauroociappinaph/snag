@@ -33,8 +33,9 @@ const RegisterPage: React.FC = () => {
       // After successful signup, we'll need to update the user's profile
       // This will be handled by the auth state change listener in useAuth
       navigate(ROUTES.DASHBOARD);
-    } catch (error) {
-      console.error('Registration error:', error);
+    } catch (err) {
+      console.error('Registration error:', err);
+      setLocalError(err instanceof Error ? err.message : 'Error durante el registro');
     }
   };
 
@@ -53,24 +54,23 @@ const RegisterPage: React.FC = () => {
             Crear cuenta
           </h1>
 
-          {(error || localError) && (
-            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
-              {error?.message || localError}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {(error || localError) && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
+                {error instanceof Error ? error.message : error || localError}
+              </div>
+            )}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                Nombre completo
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Nombre
               </label>
               <input
                 type="text"
                 id="name"
                 name="name"
                 value={formData.name}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 required
                 disabled={loading}
               />

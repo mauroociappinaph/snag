@@ -7,30 +7,28 @@ const Hero: React.FC = () => {
       <div className="container mx-auto px-4 flex flex-col md:flex-row items-center">
         <div className="md:w-1/2 mb-10 md:mb-0">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 leading-tight">
-            Book your appointment 
-            <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent"> easily</span>
+            Reserva tu cita
+            <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent"> fácilmente</span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-lg leading-relaxed">
-            Manage your appointments quickly and simply with our powerful booking platform made for service businesses.
+            Administra tus citas de manera rápida y sencilla con nuestra plataforma de reservas hecha para negocios de servicios.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <button className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-md font-medium transition-colors flex items-center justify-center group">
-              Sign up now
+              Regístrate ahora
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </button>
-            <button className="border border-gray-300 hover:border-blue-500 text-gray-800 hover:text-blue-500 px-8 py-3 rounded-md font-medium transition-all">
-              See demo
-            </button>
+
           </div>
         </div>
         <div className="md:w-1/2 relative">
           <div className="relative">
             <div className="absolute -inset-1.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl blur-lg opacity-30 animate-pulse"></div>
             <div className="relative overflow-hidden rounded-xl shadow-xl">
-              <img 
-                src="https://images.pexels.com/photos/4048742/pexels-photo-4048742.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260" 
-                alt="Scheduling interface" 
-                className="w-full h-auto rounded-xl" 
+              <img
+                src="https://images.pexels.com/photos/4048742/pexels-photo-4048742.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=126"
+                alt="Scheduling interface"
+                className="w-full h-auto rounded-xl"
               />
             </div>
           </div>
