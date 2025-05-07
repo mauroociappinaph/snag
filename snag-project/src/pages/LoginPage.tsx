@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../lib/hooks/useAuthStore';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../lib/hooks/useAuth';
 import { ROUTES } from '../lib/constants/routes';
 
 const LoginPage: React.FC = () => {
   console.log('AUTH DEBUG - LoginPage rendering');
   const { signIn, loading, error, isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
 
   console.log('AUTH DEBUG - LoginPage auth state:', {
     loading,
@@ -42,9 +43,9 @@ const LoginPage: React.FC = () => {
           userId: user?.id
         });
 
-        // Usar window.location para una redirección completa
+        // Usar navigate en lugar de window.location
         console.log('AUTH DEBUG - Redirecting to dashboard');
-        window.location.href = '/dashboard';
+        navigate(ROUTES.DASHBOARD);
       }, 1000);
     } catch (error) {
       console.error('AUTH DEBUG - Login error:', error);
@@ -77,8 +78,8 @@ const LoginPage: React.FC = () => {
             {(error || localError) && (
               <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
                 {localError || (error ? String(error) : '')}
-              </div>
-            )}
+            </div>
+          )}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                 Correo electrónico

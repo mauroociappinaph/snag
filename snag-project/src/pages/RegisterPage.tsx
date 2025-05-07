@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../lib/hooks/useAuthStore';
+import { useAuth } from '../lib/hooks/useAuth';
 import { ROUTES } from '../lib/constants/routes';
 import type { UserRole } from '../lib/types/database.types';
 import { supabaseService } from '../lib/supabase/supabaseClient';

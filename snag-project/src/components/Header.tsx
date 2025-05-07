@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
 import { Menu, X, UserCircle, LogOut } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { HeaderProps } from './interfaces/Header.interface';
 import { useScroll } from '../lib/hooks/useScroll';
 import { ROUTES } from '../lib/constants/routes';
-import { useAuth } from '../lib/hooks/useAuthStore';
+import { useAuth } from '../lib/hooks/useAuth';
 
 const Header: React.FC<HeaderProps> = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const { isScrolled } = useScroll();
   const { user, profile, isAuthenticated, signOut } = useAuth();
-  const navigate = useNavigate();
 
   console.log('AUTH DEBUG - Header rendering with auth state:', {
     isAuthenticated,
@@ -24,11 +23,14 @@ const Header: React.FC<HeaderProps> = () => {
   const handleSignOut = async () => {
     console.log('AUTH DEBUG - Header: handleSignOut called');
     try {
+      setIsProfileMenuOpen(false);
+      setIsMenuOpen(false);
       await signOut();
       console.log('AUTH DEBUG - Header: signOut successful');
-      navigate(ROUTES.HOME);
+      // La redirección se maneja en el authStore
     } catch (error) {
       console.error('AUTH DEBUG - Header: Error signing out:', error);
+      // Mostrar un mensaje de error al usuario si es necesario
     }
   };
 

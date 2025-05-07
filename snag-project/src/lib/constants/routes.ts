@@ -8,6 +8,8 @@ export const ROUTES = {
   APPOINTMENTS: '/appointments',
   BUSINESSES: '/businesses',
   PROFILE: '/profile',
+  APPOINTMENT_DETAIL: '/appointments/:id',
+  BUSINESS_PROFILE: '/business/profile',
   SETTINGS: '/settings'
 } as const;
 

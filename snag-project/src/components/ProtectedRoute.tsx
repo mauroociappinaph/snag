@@ -2,35 +2,56 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../lib/hooks/useAuth';
 import { ROUTES } from '../lib/constants/routes';
-import type { UserRole } from '../lib/types/database.types';
 import AccessDenied from './AccessDenied';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  allowedRoles?: UserRole[];
+  allowedRoles?: string[];
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, isAuthenticated } = useAuth();
 
+  console.log('ProtectedRoute: Auth state:', {
+    loading,
+    isAuthenticated,
+    hasUser: !!user,
+    hasProfile: !!profile,
+    userRole: profile?.role,
+    allowedRoles
+  });
+
+  // Si está cargando, mostrar spinner
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
-  // Si no hay usuario autenticado, redirigir al login
-  if (!user) {
-    return <Navigate to={ROUTES.LOGIN} />;
+  // Si no está autenticado, redirigir al login
+  if (!isAuthenticated || !user) {
+    console.log('ProtectedRoute: No authenticated user, redirecting to login');
+    return <Navigate to={ROUTES.LOGIN} replace />;
+  }
+
+  // Si no hay perfil, redirigir al login
+  if (!profile) {
+    console.log('ProtectedRoute: No profile found, redirecting to login');
+    return <Navigate to={ROUTES.LOGIN} replace />;
   }
 
   // Si hay roles permitidos especificados y el usuario no tiene el rol adecuado
-  if (allowedRoles && profile && !allowedRoles.includes(profile.role)) {
+  if (allowedRoles && !allowedRoles.includes(profile.role.toLowerCase())) {
+    console.log('ProtectedRoute: User role not allowed', {
+      userRole: profile.role,
+      allowedRoles
+    });
     return <AccessDenied />;
   }
 
+  // Si todo está bien, renderizar el componente hijo
   return <>{children}</>;
 };
 

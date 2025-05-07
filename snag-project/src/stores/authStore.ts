@@ -1,84 +1,123 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabaseService } from '../lib/supabase/supabaseClient';
-import type { User } from '@supabase/supabase-js';
-import type { Database } from '../lib/types/database.types';
-
-type Profile = Database['public']['Tables']['profiles']['Row'];
-type UserRole = Profile['role'];
-
-interface AuthState {
-  user: User | null;
-  profile: Profile | null;
-  isAuthenticated: boolean;
-  role: UserRole | null;
-  loading: boolean;
-  error: string | null;
-}
-
-interface AuthActions {
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
-  reset: () => void;
-}
-
-const initialState: AuthState = {
-  user: null,
-  profile: null,
-  isAuthenticated: false,
-  role: null,
-  loading: false,
-  error: null,
-};
+import type { AuthState, AuthActions, UserProfile } from '../lib/types/auth.types';
 
 export const useAuthStore = create<AuthState & AuthActions>()(
   persist(
     (set) => ({
-      ...initialState,
+      user: null,
+      profile: null,
+      isAuthenticated: false,
+      loading: true,
+      error: null,
 
       signIn: async (email: string, password: string) => {
+        set({ loading: true, error: null });
         try {
-          set({ loading: true, error: null });
-          const { error } = await supabaseService.signIn(email, password);
+          const { data, error } = await supabaseService.signIn(email, password);
           if (error) throw error;
+
+          if (data.user) {
+            const { data: profile, error: profileError } = await supabaseService.getUserProfile(data.user.id);
+
+            if (profileError) {
+              console.error('Error fetching profile:', profileError);
+              throw new Error('Error al cargar el perfil del usuario');
+            }
+
+            if (!profile) {
+              console.error('No profile found for user');
+              throw new Error('No se encontró el perfil del usuario');
+            }
+
+            set({
+              user: {
+                id: data.user.id,
+                email: data.user.email || ''
+              },
+              profile: profile as UserProfile,
+              isAuthenticated: true,
+              loading: false
+            });
+          }
         } catch (error) {
-          set({ error: (error as Error).message });
-        } finally {
-          set({ loading: false });
+          set({ error: 'Error desconocido', loading: false });
+          console.error('Error during sign in:', error);
         }
       },
 
       signUp: async (email: string, password: string) => {
+        set({ loading: true, error: null });
         try {
-          set({ loading: true, error: null });
-          const { error } = await supabaseService.signUp(email, password);
+          const { data, error } = await supabaseService.signUp(email, password);
           if (error) throw error;
+
+          if (data.user) {
+            const { data: profile, error: profileError } = await supabaseService.getUserProfile(data.user.id);
+
+            if (profileError) {
+              console.error('Error fetching profile:', profileError);
+              throw new Error('Error al cargar el perfil del usuario');
+            }
+
+            if (!profile) {
+              console.error('No profile found for user');
+              throw new Error('No se encontró el perfil del usuario');
+            }
+
+            set({
+              user: {
+                id: data.user.id,
+                email: data.user.email || ''
+              },
+              profile: profile as UserProfile,
+              isAuthenticated: true,
+              loading: false
+            });
+          }
         } catch (error) {
-          set({ error: (error as Error).message });
-        } finally {
-          set({ loading: false });
+          const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+          set({ error: errorMessage, loading: false });
         }
       },
 
       signOut: async () => {
+        set({ loading: true, error: null });
         try {
-          set({ loading: true, error: null });
           const { error } = await supabaseService.signOut();
           if (error) throw error;
-          set(initialState);
+
+          // Forzar un reset completo del estado
+          set({
+            user: null,
+            profile: null,
+            isAuthenticated: false,
+            loading: false,
+            error: null
+          });
+
+          // Limpiar el almacenamiento persistente
+          localStorage.removeItem('auth-storage');
+          sessionStorage.clear();
+
+          // Forzar una recarga de la página para limpiar cualquier estado residual
+          window.location.href = '/';
         } catch (error) {
-          set({ error: (error as Error).message });
-        } finally {
-          set({ loading: false });
+          console.error('Error during sign out:', error);
+          set({ error: 'Error desconocido', loading: false });
         }
       },
 
       setLoading: (loading: boolean) => set({ loading }),
       setError: (error: string | null) => set({ error }),
-      reset: () => set(initialState),
+      reset: () => set({
+        user: null,
+        profile: null,
+        isAuthenticated: false,
+        loading: false,
+        error: null
+      })
     }),
     {
       name: 'auth-storage',
@@ -86,7 +125,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         user: state.user,
         profile: state.profile,
         isAuthenticated: state.isAuthenticated,
-        role: state.role,
+        loading: state.loading,
+        error: state.error,
       }),
     }
   )
@@ -103,30 +143,57 @@ supabaseService.getClient().auth.onAuthStateChange(async (event, session) => {
 
       if (error) {
         console.error('AUTH STORE: Error fetching profile:', error);
+        useAuthStore.setState({
+          user: null,
+          profile: null,
+          isAuthenticated: false,
+          loading: false,
+          error: 'Error desconocido'
+        });
+      } else if (!profile) {
+        console.error('AUTH STORE: No profile found for user');
+        useAuthStore.setState({
+          user: null,
+          profile: null,
+          isAuthenticated: false,
+          loading: false,
+          error: 'Error desconocido'
+        });
       } else {
         console.log('AUTH STORE: Profile fetched successfully:', {
           profileExists: !!profile,
           role: profile?.role
         });
+
+        useAuthStore.setState({
+          user: {
+            id: session.user.id,
+            email: session.user.email || ''
+          },
+          profile: profile as UserProfile,
+          isAuthenticated: true,
+          loading: false,
+          error: null
+        });
       }
-
-      useAuthStore.setState({
-        user: session.user,
-        profile,
-        isAuthenticated: true,
-        role: profile?.role ?? null,
-      });
-
-      console.log('AUTH STORE: State updated with auth data:', {
-        authenticated: true,
-        userId: session.user.id,
-        role: profile?.role ?? null
-      });
     } catch (error) {
-      console.error('AUTH STORE: Error fetching user profile:', error);
+      console.error('AUTH STORE: Error in auth state change handler:', error);
+      useAuthStore.setState({
+        user: null,
+        profile: null,
+        isAuthenticated: false,
+        loading: false,
+        error: 'Error desconocido'
+      });
     }
   } else {
     console.log('AUTH STORE: No user in session, resetting state');
-    useAuthStore.setState(initialState);
+    useAuthStore.setState({
+      user: null,
+      profile: null,
+      isAuthenticated: false,
+      loading: false,
+      error: null
+    });
   }
 });

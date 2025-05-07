@@ -1,92 +1,68 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useAuthStore } from '../../stores/authStore';
+import type { UserRole } from '../types/auth.types';
 import { supabaseService } from '../supabase/supabaseClient';
-import type { User } from '@supabase/supabase-js';
-import type { Database } from '../types/database.types';
-
-type Profile = Database['public']['Tables']['profiles']['Row'];
-
-interface AuthState {
-  user: User | null;
-  profile: Profile | null;
-  loading: boolean;
-  error: Error | null;
-}
 
 export const useAuth = () => {
-  const [state, setState] = useState<AuthState>({
-    user: null,
-    profile: null,
-    loading: true,
-    error: null
-  });
+  const {
+    user,
+    profile,
+    isAuthenticated,
+    loading,
+    error,
+    signIn,
+    signUp,
+    signOut,
+    setError,
+    setLoading
+  } = useAuthStore();
 
+  // Verificar la sesión al montar el componente
   useEffect(() => {
-    // Get initial session
-    supabaseService.getSession().then(({ data: { session } }) => {
-      setState(prev => ({ ...prev, user: session?.user ?? null, loading: false }));
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabaseService.getClient().auth.onAuthStateChange(async (event, session) => {
-      setState(prev => ({ ...prev, user: session?.user ?? null, loading: false }));
-
-      if (session?.user) {
-        try {
-          const { data: profile } = await supabaseService.getUserProfile(session.user.id);
-          setState(prev => ({ ...prev, profile }));
-        } catch (error) {
-          setState(prev => ({ ...prev, error: error as Error }));
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabaseService.getSession();
+        if (!session && !loading) {
+          setLoading(false);
         }
-      } else {
-        setState(prev => ({ ...prev, profile: null }));
+      } catch (error) {
+        console.error('Error checking session:', error);
+        setLoading(false);
       }
-    });
-
-    return () => {
-      subscription.unsubscribe();
     };
-  }, []);
 
-  const signIn = async (email: string, password: string) => {
-    try {
-      setState(prev => ({ ...prev, loading: true, error: null }));
-      const { error } = await supabaseService.signIn(email, password);
-      if (error) throw error;
-    } catch (error) {
-      setState(prev => ({ ...prev, error: error as Error }));
-    } finally {
-      setState(prev => ({ ...prev, loading: false }));
-    }
-  };
+    checkSession();
+  }, [loading, setLoading]);
 
-  const signUp = async (email: string, password: string) => {
-    try {
-      setState(prev => ({ ...prev, loading: true, error: null }));
-      const { error } = await supabaseService.signUp(email, password);
-      if (error) throw error;
-    } catch (error) {
-      setState(prev => ({ ...prev, error: error as Error }));
-    } finally {
-      setState(prev => ({ ...prev, loading: false }));
-    }
-  };
+  const hasRole = (role: UserRole) => profile?.role === role;
+  const isAdmin = hasRole('Admin');
+  const isBusiness = hasRole('Business');
+  const isClient = hasRole('Client');
 
-  const signOut = async () => {
-    try {
-      setState(prev => ({ ...prev, loading: true, error: null }));
-      const { error } = await supabaseService.signOut();
-      if (error) throw error;
-    } catch (error) {
-      setState(prev => ({ ...prev, error: error as Error }));
-    } finally {
-      setState(prev => ({ ...prev, loading: false }));
-    }
+  const canAccess = (allowedRoles: UserRole[]) => {
+    if (!profile) return false;
+    return allowedRoles.includes(profile.role);
   };
 
   return {
-    ...state,
+    // State
+    user,
+    profile,
+    isAuthenticated,
+    loading,
+    error,
+
+    // Role checks
+    hasRole,
+    isAdmin,
+    isBusiness,
+    isClient,
+    canAccess,
+
+    // Actions
     signIn,
     signUp,
-    signOut
+    signOut,
+    setError
   };
 };
