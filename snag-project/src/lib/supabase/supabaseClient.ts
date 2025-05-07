@@ -143,12 +143,8 @@ class SupabaseService {
   }
 
   // Data methods
-  public async getBusinesses() {
-    return this.client.from('businesses').select('*');
-  }
-
-  public async getAppointments() {
-    return this.client.from('appointments').select('*');
+  public async getReservations() {
+    return this.client.from('reservations').select('*');
   }
 
   public async getUserProfile(userId: string) {
@@ -162,15 +158,12 @@ class SupabaseService {
     return result;
   }
 
-  public async createUserProfile(userId: string, email: string, fullName: string, role: UserRole) {
-    console.log('SupabaseService: createUserProfile called with:', { userId, email, fullName, role });
+  public async createUserProfile(userId: string, name: string, role: UserRole) {
+    console.log('SupabaseService: createUserProfile called with:', { userId, name, role });
     const result = await this.client.from('profiles').insert({
       id: userId,
-      name: fullName,
-      full_name: fullName,
-      email: email,
+      name: name,
       role: role,
-      created_at: new Date().toISOString(),
     });
 
     console.log('SupabaseService: createUserProfile result:', {
@@ -181,18 +174,25 @@ class SupabaseService {
     return result;
   }
 
-  public async debugProfileStructure() {
-    // Get database structure for profiles table
-    const { data, error } = await this.client.rpc('get_table_columns', {
-      table_name: 'profiles'
+  public async createReservation(userId: string, service: string, date: string, time: string) {
+    console.log('SupabaseService: createReservation called with:', { userId, service, date, time });
+    const result = await this.client.from('reservations').insert({
+      user_id: userId,
+      service: service,
+      date: date,
+      time: time,
     });
 
-    if (error) {
-      console.error('Error getting table structure:', error);
-      return null;
-    }
+    console.log('SupabaseService: createReservation result:', {
+      success: !result.error,
+      error: result.error ? result.error.message : null
+    });
 
-    return data;
+    return result;
+  }
+
+  public async getUserReservations(userId: string) {
+    return this.client.from('reservations').select('*').eq('user_id', userId);
   }
 }
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, X, Calendar, UserCircle, LogOut } from 'lucide-react';
+import { Menu, X, UserCircle, LogOut } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { HeaderProps } from './interfaces/Header.interface';
 import { useScroll } from '../lib/hooks/useScroll';
@@ -13,9 +13,23 @@ const Header: React.FC<HeaderProps> = () => {
   const { user, profile, isAuthenticated, signOut } = useAuth();
   const navigate = useNavigate();
 
+  console.log('AUTH DEBUG - Header rendering with auth state:', {
+    isAuthenticated,
+    hasUser: !!user,
+    userId: user?.id,
+    hasProfile: !!profile,
+    role: profile?.role
+  });
+
   const handleSignOut = async () => {
-    await signOut();
-    navigate(ROUTES.HOME);
+    console.log('AUTH DEBUG - Header: handleSignOut called');
+    try {
+      await signOut();
+      console.log('AUTH DEBUG - Header: signOut successful');
+      navigate(ROUTES.HOME);
+    } catch (error) {
+      console.error('AUTH DEBUG - Header: Error signing out:', error);
+    }
   };
 
   return (
@@ -25,32 +39,45 @@ const Header: React.FC<HeaderProps> = () => {
       }`}
     >
       <div className="container mx-auto px-4 flex justify-between items-center">
-        <Link to={ROUTES.HOME} className="flex items-center">
-          <Calendar className="h-8 w-8 text-blue-500" />
-          <span className="ml-2 text-2xl font-bold bg-gradient-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent">Snag</span>
+        <Link to={ROUTES.HOME} className="flex items-center space-x-2">
+          <div className="text-blue-500">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="w-8 h-8"
+            >
+              <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+              <path d="M3 9h18M9 21V9" />
+            </svg>
+          </div>
+          <span className="text-xl font-bold text-blue-500">Snag</span>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-8">
-          <Link to={ROUTES.HOME} className="text-gray-800 hover:text-blue-500 transition-colors font-medium">Inicio</Link>
-          <a href="#features" className="text-gray-800 hover:text-blue-500 transition-colors font-medium">Características</a>
-          <a href="#contact" className="text-gray-800 hover:text-blue-500 transition-colors font-medium">Contacto</a>
+        <nav className="hidden md:flex items-center space-x-6">
+          <Link to={ROUTES.HOME} className="text-gray-800 hover:text-blue-500 transition-colors">Inicio</Link>
+          <a href="#features" className="text-gray-800 hover:text-blue-500 transition-colors">Características</a>
+          <a href="#contact" className="text-gray-800 hover:text-blue-500 transition-colors">Contacto</a>
 
           {isAuthenticated ? (
             <div className="relative">
               <button
-                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                onClick={() => {
+                  console.log('AUTH DEBUG - Header: Profile button clicked, current state:', {
+                    isAuthenticated,
+                    hasUser: !!user,
+                    hasProfile: !!profile
+                  });
+                  setIsProfileMenuOpen(!isProfileMenuOpen);
+                }}
                 className="flex items-center space-x-2 text-gray-800 hover:text-blue-500 transition-colors"
               >
                 <span className="font-medium">
-                  {profile?.full_name || user?.email?.split('@')[0] || 'Mi Perfil'}
+                  {profile?.name || user?.email?.split('@')[0] || 'Mi Perfil'}
                 </span>
                 <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">
-                  {profile?.avatar_url ? (
-                    <img src={profile.avatar_url} alt="Profile" className="h-8 w-8 rounded-full" />
-                  ) : (
-                    <UserCircle className="h-6 w-6" />
-                  )}
+                  <UserCircle className="h-6 w-6" />
                 </div>
               </button>
 
@@ -59,19 +86,26 @@ const Header: React.FC<HeaderProps> = () => {
                   <Link
                     to={ROUTES.PROFILE}
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setIsProfileMenuOpen(false)}
+                    onClick={() => {
+                      console.log('AUTH DEBUG - Header: Profile link clicked');
+                      setIsProfileMenuOpen(false);
+                    }}
                   >
                     Mi Perfil
                   </Link>
                   <Link
                     to={ROUTES.DASHBOARD}
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setIsProfileMenuOpen(false)}
+                    onClick={() => {
+                      console.log('AUTH DEBUG - Header: Dashboard link clicked');
+                      setIsProfileMenuOpen(false);
+                    }}
                   >
                     Dashboard
                   </Link>
                   <button
                     onClick={() => {
+                      console.log('AUTH DEBUG - Header: Sign out button clicked');
                       setIsProfileMenuOpen(false);
                       handleSignOut();
                     }}
@@ -84,10 +118,17 @@ const Header: React.FC<HeaderProps> = () => {
             </div>
           ) : (
             <>
-              <Link to={ROUTES.LOGIN} className="text-gray-800 hover:text-blue-500 transition-colors font-medium">Iniciar sesión</Link>
+              <Link
+                to={ROUTES.LOGIN}
+                className="text-gray-800 hover:text-blue-500 transition-colors font-medium"
+                onClick={() => console.log('AUTH DEBUG - Header: Login link clicked')}
+              >
+                Iniciar sesión
+              </Link>
               <Link
                 to={ROUTES.REGISTER}
                 className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-md font-medium transition-colors"
+                onClick={() => console.log('AUTH DEBUG - Header: Register link clicked')}
               >
                 Registrarse
               </Link>

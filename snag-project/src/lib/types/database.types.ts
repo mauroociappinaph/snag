@@ -6,7 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export type UserRole = 'admin' | 'business' | 'client';
+export type UserRole = 'Admin' | 'Business' | 'Client';
 
 export interface Database {
   public: {
@@ -14,129 +14,56 @@ export interface Database {
       profiles: {
         Row: {
           id: string
-          created_at: string
-          email: string
-          full_name: string | null
-          avatar_url: string | null
+          name: string
           role: UserRole
+          created_at: string
+          updated_at: string
         }
         Insert: {
           id: string
-          created_at?: string
-          email: string
-          full_name?: string | null
-          avatar_url?: string | null
+          name: string
           role: UserRole
+          created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
-          created_at?: string
-          email?: string
-          full_name?: string | null
-          avatar_url?: string | null
+          name?: string
           role?: UserRole
+          created_at?: string
+          updated_at?: string
         }
       }
-      businesses: {
+      reservations: {
         Row: {
           id: string
+          user_id: string
+          service: string
+          date: string
+          time: string
+          status: 'pending' | 'confirmed' | 'cancelled'
           created_at: string
-          name: string
-          description: string | null
-          address: string | null
-          phone: string | null
-          email: string | null
-          owner_id: string
-          logo_url: string | null
+          updated_at: string
         }
         Insert: {
           id?: string
+          user_id: string
+          service: string
+          date: string
+          time: string
+          status?: 'pending' | 'confirmed' | 'cancelled'
           created_at?: string
-          name: string
-          description?: string | null
-          address?: string | null
-          phone?: string | null
-          email?: string | null
-          owner_id: string
-          logo_url?: string | null
+          updated_at?: string
         }
         Update: {
           id?: string
-          created_at?: string
-          name?: string
-          description?: string | null
-          address?: string | null
-          phone?: string | null
-          email?: string | null
-          owner_id?: string
-          logo_url?: string | null
-        }
-      }
-      appointments: {
-        Row: {
-          id: string
-          created_at: string
-          date: string
-          start_time: string
-          end_time: string
-          status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
-          client_id: string
-          business_id: string
-          service_id: string | null
-          notes: string | null
-        }
-        Insert: {
-          id?: string
-          created_at?: string
-          date: string
-          start_time: string
-          end_time: string
-          status?: 'pending' | 'confirmed' | 'cancelled' | 'completed'
-          client_id: string
-          business_id: string
-          service_id?: string | null
-          notes?: string | null
-        }
-        Update: {
-          id?: string
-          created_at?: string
+          user_id?: string
+          service?: string
           date?: string
-          start_time?: string
-          end_time?: string
-          status?: 'pending' | 'confirmed' | 'cancelled' | 'completed'
-          client_id?: string
-          business_id?: string
-          service_id?: string | null
-          notes?: string | null
-        }
-      }
-      services: {
-        Row: {
-          id: string
-          created_at: string
-          name: string
-          description: string | null
-          duration: number
-          price: number
-          business_id: string
-        }
-        Insert: {
-          id?: string
+          time?: string
+          status?: 'pending' | 'confirmed' | 'cancelled'
           created_at?: string
-          name: string
-          description?: string | null
-          duration: number
-          price: number
-          business_id: string
-        }
-        Update: {
-          id?: string
-          created_at?: string
-          name?: string
-          description?: string | null
-          duration?: number
-          price?: number
-          business_id?: string
+          updated_at?: string
         }
       }
     }

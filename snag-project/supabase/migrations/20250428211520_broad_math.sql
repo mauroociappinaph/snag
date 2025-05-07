@@ -8,7 +8,7 @@
       - `role` (text)
       - `created_at` (timestamp)
       - `updated_at` (timestamp)
-    
+
     - `reservations`
       - `id` (uuid, primary key)
       - `user_id` (uuid, references profiles)
@@ -24,8 +24,13 @@
     - Add policies for role-based access control
 */
 
--- Create profiles table
-CREATE TABLE profiles (
+-- Drop existing triggers and functions
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON profiles;
+DROP TRIGGER IF EXISTS update_reservations_updated_at ON reservations;
+DROP FUNCTION IF EXISTS update_updated_at_column();
+
+-- Create profiles table if not exists
+CREATE TABLE IF NOT EXISTS profiles (
   id uuid PRIMARY KEY REFERENCES auth.users ON DELETE CASCADE,
   name text NOT NULL,
   role text NOT NULL CHECK (role IN ('Admin', 'Business', 'Client')),
@@ -33,8 +38,8 @@ CREATE TABLE profiles (
   updated_at timestamptz DEFAULT now()
 );
 
--- Create reservations table
-CREATE TABLE reservations (
+-- Create reservations table if not exists
+CREATE TABLE IF NOT EXISTS reservations (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid REFERENCES profiles ON DELETE CASCADE NOT NULL,
   service text NOT NULL,
@@ -48,6 +53,14 @@ CREATE TABLE reservations (
 -- Enable RLS
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reservations ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+DROP POLICY IF EXISTS "Admins have full access to reservations" ON reservations;
+DROP POLICY IF EXISTS "Businesses can view their reservations" ON reservations;
+DROP POLICY IF EXISTS "Clients can view own reservations" ON reservations;
+DROP POLICY IF EXISTS "Clients can create reservations" ON reservations;
 
 -- Profiles policies
 CREATE POLICY "Public profiles are viewable by everyone"
