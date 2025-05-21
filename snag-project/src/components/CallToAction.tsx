@@ -9,9 +9,9 @@ const CallToAction: React.FC = () => {
           ¿Listo para optimizar tu proceso de reservas?
         </h2>
         <p className="text-xl text-blue-100 max-w-2xl mx-auto mb-8">
-         Se uno de los primeros negocios en usar Snag para gestionar sus reservas y aumentar sus ingresos.
-         <br />
-         Registrate ahora y comienza a recibir reservas hoy mismo.
+         Sé uno de los primeros negocios en usar Snag para gestionar sus reservas y aumentar sus ingresos.
+          <br />
+         Regístrate ahora y comienza a recibir reservas hoy mismo.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-3 rounded-md font-medium transition-colors flex items-center justify-center mx-auto sm:mx-0 group">

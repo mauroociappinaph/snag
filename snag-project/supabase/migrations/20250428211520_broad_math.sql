@@ -24,9 +24,19 @@
     - Add policies for role-based access control
 */
 
--- Drop existing triggers and functions
-DROP TRIGGER IF EXISTS update_profiles_updated_at ON profiles;
-DROP TRIGGER IF EXISTS update_reservations_updated_at ON reservations;
+-- Safely drop existing triggers and functions
+DO
+$$
+BEGIN
+  IF to_regclass('public.profiles') IS NOT NULL THEN
+    EXECUTE 'DROP TRIGGER IF EXISTS update_profiles_updated_at ON profiles';
+  END IF;
+  IF to_regclass('public.reservations') IS NOT NULL THEN
+    EXECUTE 'DROP TRIGGER IF EXISTS update_reservations_updated_at ON reservations';
+  END IF;
+END;
+$$;
+
 DROP FUNCTION IF EXISTS update_updated_at_column();
 
 -- Create profiles table if not exists

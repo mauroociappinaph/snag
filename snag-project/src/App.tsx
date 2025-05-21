@@ -4,6 +4,7 @@ import { Notifications } from './components/ui/Notifications';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ROUTES } from './lib/constants/routes';
+import { USER_ROLES } from './lib/constants/roles';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
 
 
@@ -17,6 +18,7 @@ const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
 const BusinessDashboardPage = lazy(() => import('./pages/BusinessDashboardPage'));
 const AppointmentDetailPage = lazy(() => import('./pages/AppointmentDetailPage'));
 const BusinessProfilePage = lazy(() => import('./pages/BusinessProfilePage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 function App() {
   return (
@@ -49,7 +51,7 @@ function App() {
             <Route
               path={ROUTES.ADMIN_DASHBOARD}
               element={
-                <ProtectedRoute allowedRoles={['Admin']}>
+                <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
                   <AdminDashboardPage />
                 </ProtectedRoute>
               }
@@ -57,7 +59,7 @@ function App() {
             <Route
               path={ROUTES.BUSINESS_DASHBOARD}
               element={
-                <ProtectedRoute allowedRoles={['Business']}>
+                <ProtectedRoute allowedRoles={[USER_ROLES.BUSINESS]}>
                   <BusinessDashboardPage />
                 </ProtectedRoute>
               }
@@ -73,11 +75,14 @@ function App() {
             <Route
               path={ROUTES.BUSINESS_PROFILE}
               element={
-                <ProtectedRoute allowedRoles={['Business']}>
+                <ProtectedRoute allowedRoles={[USER_ROLES.BUSINESS]}>
                   <BusinessProfilePage />
                 </ProtectedRoute>
               }
             />
+
+            {/* Fallback – make sure this is the **last** Route */}
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>
       </Layout>
