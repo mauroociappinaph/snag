@@ -34,7 +34,7 @@ const Hero: React.FC = () => {
           </div>
           <div className="absolute -bottom-4 -right-4 bg-white py-3 px-4 rounded-lg shadow-lg flex items-center">
             <div className="bg-green-500 rounded-full h-3 w-3 mr-2"></div>
-            <p className="text-sm font-medium">25 new bookings today</p>
+            <p className="text-sm font-medium">25 nuevas reservas hoy</p>
           </div>
         </div>
       </div>
