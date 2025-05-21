@@ -1,0 +1,9 @@
+{
+  "hero": {
+    "title": "Book your appointment",
+    "titleHighlight": "easily",
+    "description": "Manage your appointments quickly and easily with our booking platform made for service businesses.",
+    "cta": "Sign up now",
+    "stats": "{{count}} new bookings today"
+  }
+}

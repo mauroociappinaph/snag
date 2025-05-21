@@ -4,7 +4,7 @@ import { Notifications } from './components/ui/Notifications';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ROUTES } from './lib/constants/routes';
-import { USER_ROLES } from './lib/constants/roles';
+import { UserRole } from './lib/constants/roles';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
 
 
@@ -51,7 +51,7 @@ function App() {
             <Route
               path={ROUTES.ADMIN_DASHBOARD}
               element={
-                <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+                <ProtectedRoute allowedRoles={[UserRole.Admin]}>
                   <AdminDashboardPage />
                 </ProtectedRoute>
               }
@@ -59,7 +59,7 @@ function App() {
             <Route
               path={ROUTES.BUSINESS_DASHBOARD}
               element={
-                <ProtectedRoute allowedRoles={[USER_ROLES.BUSINESS]}>
+                <ProtectedRoute allowedRoles={[UserRole.Business]}>
                   <BusinessDashboardPage />
                 </ProtectedRoute>
               }
@@ -75,7 +75,7 @@ function App() {
             <Route
               path={ROUTES.BUSINESS_PROFILE}
               element={
-                <ProtectedRoute allowedRoles={[USER_ROLES.BUSINESS]}>
+                <ProtectedRoute allowedRoles={[UserRole.Business]}>
                   <BusinessProfilePage />
                 </ProtectedRoute>
               }

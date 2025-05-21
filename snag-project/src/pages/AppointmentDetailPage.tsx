@@ -1,79 +1,79 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, Clock, Building2, User, Tag } from 'lucide-react';
+import { Calendar, Clock, User, Tag } from 'lucide-react';
 import { useAuth } from '../lib/hooks/useAuth';
 import { supabase } from '../lib/supabase/supabaseClient';
 import { ROUTES } from '../lib/constants/routes';
 import type { Database } from '../lib/types/database.types';
+import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import { getStatusColor } from '../lib/constants/statusColors';
 
-type AppointmentWithDetails = Database['public']['Tables']['appointments']['Row'] & {
-  business: Database['public']['Tables']['businesses']['Row'];
-  service: Database['public']['Tables']['services']['Row'];
-  client: Database['public']['Tables']['profiles']['Row'];
+type ReservationWithDetails = Database['public']['Tables']['reservations']['Row'] & {
+  user: Database['public']['Tables']['profiles']['Row'];
 };
 
 const AppointmentDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
-  const [appointment, setAppointment] = useState<AppointmentWithDetails | null>(null);
+  const [reservation, setReservation] = useState<ReservationWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchAppointment = async () => {
+    const fetchReservation = async () => {
       try {
         if (!id || !user || !profile) return;
 
         const { data, error } = await supabase
-          .from('appointments')
+          .from('reservations')
           .select(`
             *,
-            business:businesses(*),
-            service:services(*),
-            client:profiles!appointments_client_id_fkey(*)
+            user:profiles(*)
           `)
           .eq('id', id)
           .single();
 
         if (error) throw error;
-        if (!data) throw new Error('Appointment not found');
+        if (!data) throw new Error('Reservation not found');
 
         // Verificar permisos
         const hasAccess =
-          profile.role === 'admin' ||
-          data.client_id === user.id ||
-          data.business_id === user.id;
+          profile.role === 'Admin' ||
+          data.user_id === user.id;
 
         if (!hasAccess) {
-          throw new Error('You do not have permission to view this appointment');
+          throw new Error('You do not have permission to view this reservation');
         }
 
-        setAppointment(data as AppointmentWithDetails);
+        setReservation(data as ReservationWithDetails);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
-        navigate(ROUTES.DASHBOARD);
+        // Allow user to see the error before redirecting
+        setTimeout(() => {
+          navigate(ROUTES.DASHBOARD);
+        }, 3000);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAppointment();
+    fetchReservation();
   }, [id, user, profile, navigate]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
+if (loading) {
+   return (
+    <div className="min-h-screen flex items-center justify-center">
+      <LoadingSpinner />
+    </div>
+   );
+ }
 
-  if (error || !appointment) {
+  if (error || !reservation) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-          {error || 'Appointment not found'}
+          {error || 'Reservation not found'}
         </div>
       </div>
     );
@@ -95,24 +95,14 @@ const AppointmentDetailPage: React.FC = () => {
     });
   };
 
-  const getStatusColor = (status: string) => {
-    const colors = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      confirmed: 'bg-green-100 text-green-800',
-      cancelled: 'bg-red-100 text-red-800',
-      completed: 'bg-blue-100 text-blue-800'
-    };
-    return colors[status as keyof typeof colors] || colors.pending;
-  };
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">Detalles de la Cita</h1>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(appointment.status)}`}>
-              {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
+            <h1 className="text-2xl font-bold text-gray-900">Detalles de la Reserva</h1>
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(reservation.status)}`}>
+              {reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}
             </span>
           </div>
 
@@ -121,7 +111,7 @@ const AppointmentDetailPage: React.FC = () => {
               <Calendar className="w-6 h-6 text-gray-400" />
               <div>
                 <p className="text-sm text-gray-500">Fecha</p>
-                <p className="text-gray-900">{formatDate(appointment.date)}</p>
+                <p className="text-gray-900">{formatDate(reservation.date)}</p>
               </div>
             </div>
 
@@ -129,27 +119,7 @@ const AppointmentDetailPage: React.FC = () => {
               <Clock className="w-6 h-6 text-gray-400" />
               <div>
                 <p className="text-sm text-gray-500">Horario</p>
-                <p className="text-gray-900">
-                  {formatTime(appointment.start_time)} - {formatTime(appointment.end_time)}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-4">
-              <Building2 className="w-6 h-6 text-gray-400" />
-              <div>
-                <p className="text-sm text-gray-500">Negocio</p>
-                <p className="text-gray-900">{appointment.business.name}</p>
-                <p className="text-sm text-gray-500">{appointment.business.address}</p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-4">
-              <User className="w-6 h-6 text-gray-400" />
-              <div>
-                <p className="text-sm text-gray-500">Cliente</p>
-                <p className="text-gray-900">{appointment.client.full_name}</p>
-                <p className="text-sm text-gray-500">{appointment.client.email}</p>
+                <p className="text-gray-900">{formatTime(reservation.time)}</p>
               </div>
             </div>
 
@@ -157,13 +127,15 @@ const AppointmentDetailPage: React.FC = () => {
               <Tag className="w-6 h-6 text-gray-400" />
               <div>
                 <p className="text-sm text-gray-500">Servicio</p>
-                <p className="text-gray-900">{appointment.service.name}</p>
-                <p className="text-sm text-gray-500">
-                  Duración: {appointment.service.duration} minutos
-                </p>
-                <p className="text-sm text-gray-500">
-                  Precio: ${appointment.service.price}
-                </p>
+                <p className="text-gray-900">{reservation.service}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start space-x-4">
+              <User className="w-6 h-6 text-gray-400" />
+              <div>
+                <p className="text-sm text-gray-500">Usuario</p>
+                <p className="text-gray-900">{reservation.user.name}</p>
               </div>
             </div>
           </div>

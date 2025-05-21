@@ -1,0 +1,9 @@
+{
+  "hero": {
+    "title": "Reserva tu cita",
+    "titleHighlight": "fácilmente",
+    "description": "Administra tus citas de manera rápida y sencilla con nuestra plataforma de reservas hecha para negocios de servicios.",
+    "cta": "Regístrate ahora",
+    "stats": "{{count}} nuevas reservas hoy"
+  }
+}
