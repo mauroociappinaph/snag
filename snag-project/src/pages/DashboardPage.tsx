@@ -18,7 +18,7 @@ const DashboardPage: React.FC = () => {
           </div>
           <div>
             <p className="text-sm text-gray-600">Email</p>
-            <p className="font-medium">{user?.email}</p>
+            <p className="font-medium">{user?.email || 'No especificado'}</p>
           </div>
           <div>
             <p className="text-sm text-gray-600">Rol</p>

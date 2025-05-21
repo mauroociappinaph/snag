@@ -12,24 +12,12 @@ const Header: React.FC<HeaderProps> = () => {
   const { isScrolled } = useScroll();
   const { user, profile, isAuthenticated, signOut } = useAuth();
 
-  console.log('AUTH DEBUG - Header rendering with auth state:', {
-    isAuthenticated,
-    hasUser: !!user,
-    userId: user?.id,
-    hasProfile: !!profile,
-    role: profile?.role
-  });
-
   const handleSignOut = async () => {
-    console.log('AUTH DEBUG - Header: handleSignOut called');
     try {
       setIsProfileMenuOpen(false);
       setIsMenuOpen(false);
       await signOut();
-      console.log('AUTH DEBUG - Header: signOut successful');
-      // La redirección se maneja en el authStore
-    } catch (error) {
-      console.error('AUTH DEBUG - Header: Error signing out:', error);
+    } catch {
       // Mostrar un mensaje de error al usuario si es necesario
     }
   };
@@ -65,14 +53,7 @@ const Header: React.FC<HeaderProps> = () => {
           {isAuthenticated ? (
             <div className="relative">
               <button
-                onClick={() => {
-                  console.log('AUTH DEBUG - Header: Profile button clicked, current state:', {
-                    isAuthenticated,
-                    hasUser: !!user,
-                    hasProfile: !!profile
-                  });
-                  setIsProfileMenuOpen(!isProfileMenuOpen);
-                }}
+                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                 className="flex items-center space-x-2 text-gray-800 hover:text-blue-500 transition-colors"
               >
                 <span className="font-medium">
@@ -88,26 +69,19 @@ const Header: React.FC<HeaderProps> = () => {
                   <Link
                     to={ROUTES.PROFILE}
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => {
-                      console.log('AUTH DEBUG - Header: Profile link clicked');
-                      setIsProfileMenuOpen(false);
-                    }}
+                    onClick={() => setIsProfileMenuOpen(false)}
                   >
                     Mi Perfil
                   </Link>
                   <Link
                     to={ROUTES.DASHBOARD}
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => {
-                      console.log('AUTH DEBUG - Header: Dashboard link clicked');
-                      setIsProfileMenuOpen(false);
-                    }}
+                    onClick={() => setIsProfileMenuOpen(false)}
                   >
                     Dashboard
                   </Link>
                   <button
                     onClick={() => {
-                      console.log('AUTH DEBUG - Header: Sign out button clicked');
                       setIsProfileMenuOpen(false);
                       handleSignOut();
                     }}
@@ -123,14 +97,12 @@ const Header: React.FC<HeaderProps> = () => {
               <Link
                 to={ROUTES.LOGIN}
                 className="text-gray-800 hover:text-blue-500 transition-colors font-medium"
-                onClick={() => console.log('AUTH DEBUG - Header: Login link clicked')}
               >
                 Iniciar sesión
               </Link>
               <Link
                 to={ROUTES.REGISTER}
                 className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-md font-medium transition-colors"
-                onClick={() => console.log('AUTH DEBUG - Header: Register link clicked')}
               >
                 Registrarse
               </Link>
