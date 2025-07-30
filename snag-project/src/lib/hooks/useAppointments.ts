@@ -1,130 +1,45 @@
-import { useState } from 'react';
-import { useAuth } from './useAuth';
+import { useState, useEffect, useCallback } from 'react';
 import { appointmentService } from '../services/appointmentService';
-import type { Database } from '../types/database.types';
+import type { Appointment } from '../types/reservation.types';
 
-type AppointmentInsert = Database['public']['Tables']['appointments']['Insert'];
-type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
-
-export const useAppointments = () => {
-  const { user, profile } = useAuth();
-  const [loading, setLoading] = useState(false);
+/**
+ * Custom hook to fetch and manage appointments for a specific business.
+ * @param businessId The UUID of the business whose appointments are to be fetched.
+ * @returns An object containing the list of appointments, a loading state, and an error state.
+ */
+export const useAppointments = (businessId: string | null) => {
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const createAppointment = async (appointmentData: Omit<AppointmentInsert, 'client_id' | 'status'>) => {
-    if (!user) throw new Error('User must be authenticated');
+  const fetchAppointments = useCallback(async () => {
+    if (!businessId) {
+      setAppointments([]);
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
       setError(null);
-
-      const appointment: AppointmentInsert = {
-        ...appointmentData,
-        client_id: user.id,
-        status: 'pending'
-      };
-
-      const result = await appointmentService.create(appointment);
-      return result;
+      const data = await appointmentService.getByBusinessId(businessId);
+      // Assuming the service returns data that matches the Appointment[] type
+      setAppointments(data as any[] as Appointment[]);
     } catch (err) {
       setError(err as Error);
-      throw err;
     } finally {
       setLoading(false);
     }
-  };
+  }, [businessId]);
 
-  const getAppointments = async () => {
-    if (!user || !profile) throw new Error('User must be authenticated');
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      if (profile.role === 'business') {
-        return await appointmentService.getByBusinessId(user.id);
-      } else {
-        return await appointmentService.getByClientId(user.id);
-      }
-    } catch (err) {
-      setError(err as Error);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateAppointmentStatus = async (appointmentId: string, status: AppointmentStatus) => {
-    if (!user || !profile) throw new Error('User must be authenticated');
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      const result = await appointmentService.updateStatus(
-        appointmentId,
-        status,
-        user.id,
-        profile.role
-      );
-      return result;
-    } catch (err) {
-      setError(err as Error);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteAppointment = async (appointmentId: string) => {
-    if (!user || !profile) throw new Error('User must be authenticated');
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      await appointmentService.delete(appointmentId, user.id, profile.role);
-      return true;
-    } catch (err) {
-      setError(err as Error);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const checkAvailability = async (
-    businessId: string,
-    serviceId: string,
-    date: string,
-    startTime: string
-  ) => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const isAvailable = await appointmentService.checkAvailability(
-        businessId,
-        serviceId,
-        date,
-        startTime
-      );
-      return isAvailable;
-    } catch (err) {
-      setError(err as Error);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    fetchAppointments();
+  }, [fetchAppointments]);
 
   return {
-    createAppointment,
-    getAppointments,
-    updateAppointmentStatus,
-    deleteAppointment,
-    checkAvailability,
+    appointments,
     loading,
-    error
+    error,
+    refetch: fetchAppointments, // Expose a refetch function
   };
 };
