@@ -1,11 +1,18 @@
 import { supabase } from '../supabase/supabaseClient';
 import type { Database } from '../types/database.types';
+import type { AppointmentStatus } from '../types/reservation.types';
 
 type AppointmentInsert = Database['public']['Tables']['appointments']['Insert'];
-type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
 
+/**
+ * Service object for handling appointment-related database operations.
+ */
 export const appointmentService = {
-  // Crear una nueva cita
+  /**
+   * Creates a new appointment.
+   * @param appointment - The appointment data to insert.
+   * @returns The created appointment data.
+   */
   async create(appointment: AppointmentInsert) {
     const { data, error } = await supabase
       .from('appointments')
@@ -17,7 +24,11 @@ export const appointmentService = {
     return data;
   },
 
-  // Obtener citas por ID de cliente
+  /**
+   * Fetches all appointments for a specific client, joining business and service details.
+   * @param clientId - The UUID of the client.
+   * @returns A list of appointments.
+   */
   async getByClientId(clientId: string) {
     const { data, error } = await supabase
       .from('appointments')
@@ -33,7 +44,12 @@ export const appointmentService = {
     return data;
   },
 
-  // Obtener citas por ID de negocio
+  /**
+   * Fetches all appointments for a specific business, joining client and service details.
+   * This is the primary function for the business dashboard.
+   * @param businessId - The UUID of the business.
+   * @returns A list of appointments with nested client and service info.
+   */
   async getByBusinessId(businessId: string) {
     const { data, error } = await supabase
       .from('appointments')
@@ -49,23 +65,33 @@ export const appointmentService = {
     return data;
   },
 
-  // Actualizar el estado de una cita
+  /**
+   * Updates the status of a specific appointment after verifying authorization.
+   * @param appointmentId - The UUID of the appointment to update.
+   * @param status - The new status to set.
+   * @param userId - The UUID of the user performing the action.
+   * @param userRole - The role of the user performing the action.
+   * @returns The updated appointment data.
+   */
   async updateStatus(
     appointmentId: string,
     status: AppointmentStatus,
     userId: string,
     userRole: string
   ) {
-    // Primero verificamos que el usuario tenga permiso para actualizar esta cita
-    const { data: appointment } = await supabase
+    // First, verify that the user is authorized to update this appointment.
+    // We only fetch the IDs needed for the check for efficiency.
+    const { data: appointment, error: fetchError } = await supabase
       .from('appointments')
-      .select('*')
+      .select('client_id, business_id')
       .eq('id', appointmentId)
       .single();
 
-    if (!appointment) throw new Error('Appointment not found');
+    if (fetchError || !appointment) {
+      throw new Error('Appointment not found or failed to fetch for auth check.');
+    }
 
-    // Solo el cliente, el negocio dueño de la cita o un admin pueden modificar
+    // Only the client, the business owner of the appointment, or an admin can modify.
     const canModify =
       userRole === 'admin' ||
       (userRole === 'client' && appointment.client_id === userId) ||
@@ -75,6 +101,7 @@ export const appointmentService = {
       throw new Error('Unauthorized to modify this appointment');
     }
 
+    // If authorized, proceed with the update.
     const { data, error } = await supabase
       .from('appointments')
       .update({ status })
@@ -86,18 +113,26 @@ export const appointmentService = {
     return data;
   },
 
-  // Eliminar una cita
+  /**
+   * Deletes a specific appointment after verifying authorization.
+   * @param appointmentId - The UUID of the appointment to delete.
+   * @param userId - The UUID of the user performing the action.
+   * @param userRole - The role of the user performing the action.
+   * @returns True if deletion was successful.
+   */
   async delete(appointmentId: string, userId: string, userRole: string) {
-    // Primero verificamos que el usuario tenga permiso para eliminar esta cita
-    const { data: appointment } = await supabase
+    // First, verify that the user is authorized to delete this appointment.
+    const { data: appointment, error: fetchError } = await supabase
       .from('appointments')
-      .select('*')
+      .select('client_id, business_id')
       .eq('id', appointmentId)
       .single();
 
-    if (!appointment) throw new Error('Appointment not found');
+    if (fetchError || !appointment) {
+      throw new Error('Appointment not found or failed to fetch for auth check.');
+    }
 
-    // Solo el cliente, el negocio dueño de la cita o un admin pueden eliminar
+    // Only the client, the business owner, or an admin can delete.
     const canDelete =
       userRole === 'admin' ||
       (userRole === 'client' && appointment.client_id === userId) ||
@@ -107,6 +142,7 @@ export const appointmentService = {
       throw new Error('Unauthorized to delete this appointment');
     }
 
+    // If authorized, proceed with the deletion.
     const { error } = await supabase
       .from('appointments')
       .delete()
@@ -116,14 +152,21 @@ export const appointmentService = {
     return true;
   },
 
-  // Verificar disponibilidad de horario
+  /**
+   * Checks if a specific time slot is available for a given service at a business.
+   * @param businessId - The UUID of the business.
+   * @param serviceId - The UUID of the service.
+   * @param date - The date of the potential appointment (YYYY-MM-DD).
+   * @param startTime - The start time of the potential appointment (HH:MM:SS).
+   * @returns True if the slot is available, false otherwise.
+   */
   async checkAvailability(
     businessId: string,
     serviceId: string,
     date: string,
     startTime: string
   ) {
-    // Obtener la duración del servicio
+    // Get the duration of the service to calculate the end time.
     const { data: service } = await supabase
       .from('services')
       .select('duration')
@@ -132,20 +175,20 @@ export const appointmentService = {
 
     if (!service) throw new Error('Service not found');
 
-    // Calcular la hora de fin basada en la duración del servicio
+    // Calculate the end time based on the service duration.
     const startDateTime = new Date(`${date}T${startTime}`);
     const endTime = new Date(startDateTime.getTime() + service.duration * 60000)
       .toTimeString()
       .split(' ')[0];
 
-    // Verificar si hay citas que se superpongan
+    // Check for any conflicting appointments that are not cancelled.
     const { data: conflicts, error } = await supabase
       .from('appointments')
-      .select('*')
+      .select('id') // We only need to know if a conflict exists, not the data.
       .eq('business_id', businessId)
       .eq('date', date)
       .not('status', 'eq', 'cancelled')
-      .or(`start_time.lte.${endTime},end_time.gte.${startTime}`);
+      .or(`start_time.lte.${endTime},end_time.gte.${startTime}`); // Check for overlaps.
 
     if (error) throw error;
     return conflicts.length === 0;

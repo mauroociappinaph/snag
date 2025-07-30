@@ -1,0 +1,129 @@
+---
+alwaysApply: false
+---
+
+# Plan de Producto: Snag
+
+Este documento describe la hoja de ruta estratégica para el desarrollo de Snag, dividida en fases incrementales para entregar valor de manera continua.
+
+## Fase 1: MVP - Funcionalidad de Reserva Principal
+
+**Objetivo**: Lanzar la funcionalidad mínima indispensable que permita a los clientes reservar citas y a los comercios gestionarlas. Esto valida el flujo de negocio central.
+
+- **1.1. Dashboard del Comercio (Tarea Actual)**:
+
+  - **Descripción**: Implementar la vista para que los comercios vean y gestionen sus citas entrantes.
+  - **User Stories Clave**: "Como comercio, puedo ver mis citas", "Como comercio, puedo actualizar el estado de una cita".
+
+- **1.2. Flujo de Reserva del Cliente**:
+
+  - **Descripción**: Desarrollar la interfaz para que los clientes busquen comercios, vean sus servicios y horarios disponibles, y completen una reserva.
+  - **User Stories Clave**: "Como cliente, puedo buscar un comercio", "Como cliente, puedo reservar una cita en un horario disponible".
+
+- **1.3. Dashboard del Cliente**:
+
+  - **Descripción**: Crear una página simple donde los clientes puedan ver sus próximas y pasadas citas.
+  - **User Stories Clave**: "Como cliente, puedo ver mis próximas citas", "Como cliente, puedo cancelar una cita".
+
+- **1.4. Seguridad Fundamental (RLS)**:
+  - **Descripción**: Auditar y asegurar que todas las políticas de Row-Level Security en Supabase estén correctamente implementadas para proteger los datos de los usuarios.
+  - **Criterio**: Un usuario (cliente o comercio) NUNCA debe poder ver o modificar datos que no le pertenecen.
+
+## Fase 2: Mejoras de Gestión y Experiencia
+
+**Objetivo**: Enriquecer la plataforma con herramientas de gestión más robustas para los comercios y añadir funcionalidades clave para la comunicación.
+
+- **2.1. Gestión del Perfil del Comercio**:
+
+  - **Descripción**: Permitir a los comercios editar la información de su negocio (nombre, dirección), definir los servicios que ofrecen (nombre, precio, duración) y establecer sus horarios de trabajo.
+
+- **2.2. Notificaciones Transaccionales**:
+
+  - **Descripción**: Integrar un servicio de correo electrónico (ej. Supabase Functions con Resend/SendGrid) para enviar notificaciones automáticas para eventos clave: confirmación de reserva, recordatorio 24h antes, cancelación.
+
+- **2.3. Dashboard del Administrador (Básico)**:
+  - **Descripción**: Construir la primera versión del panel de administración para ver una lista de usuarios y comercios registrados, y poder desactivar cuentas.
+
+## Fase 3: Funcionalidades Avanzadas y Escalabilidad
+
+**Objetivo**: Añadir características que aumenten el valor para los comercios y mejoren la inteligencia de la plataforma.
+
+- **3.1. Gestión de Personal**:
+
+  - **Descripción**: Permitir que los comercios añadan múltiples miembros de personal. Las citas se podrán asignar a un miembro específico del personal, cada uno con su propio calendario de disponibilidad.
+
+- **3.2. Analíticas para Comercios**:
+
+  - **Descripción**: Crear un panel de analíticas simple para que los comercios vean datos como número de citas por mes, servicios más populares, etc.
+
+- **3.3. Reseñas y Calificaciones**:
+  - **Descripción**: Permitir que los clientes dejen una reseña y una calificación después de completar una cita. Las calificaciones serán visibles para otros clientes.
+
+## Consideraciones Futuras (Post-MVP)
+
+- Integración de pagos online.
+- Aplicación móvil (React Native o nativa).
+- Planes de suscripción para comercios (features premium).
+- Campañas de marketing por correo electrónico.# Plan de Producto: Snag
+
+Este documento describe la hoja de ruta estratégica para el desarrollo de Snag, dividida en fases incrementales para entregar valor de manera continua.
+
+## Fase 1: MVP - Funcionalidad de Reserva Principal
+
+**Objetivo**: Lanzar la funcionalidad mínima indispensable que permita a los clientes reservar citas y a los comercios gestionarlas. Esto valida el flujo de negocio central.
+
+- **1.1. Dashboard del Comercio (Tarea Actual)**:
+
+  - **Descripción**: Implementar la vista para que los comercios vean y gestionen sus citas entrantes.
+  - **User Stories Clave**: "Como comercio, puedo ver mis citas", "Como comercio, puedo actualizar el estado de una cita".
+
+- **1.2. Flujo de Reserva del Cliente**:
+
+  - **Descripción**: Desarrollar la interfaz para que los clientes busquen comercios, vean sus servicios y horarios disponibles, y completen una reserva.
+  - **User Stories Clave**: "Como cliente, puedo buscar un comercio", "Como cliente, puedo reservar una cita en un horario disponible".
+
+- **1.3. Dashboard del Cliente**:
+
+  - **Descripción**: Crear una página simple donde los clientes puedan ver sus próximas y pasadas citas.
+  - **User Stories Clave**: "Como cliente, puedo ver mis próximas citas", "Como cliente, puedo cancelar una cita".
+
+- **1.4. Seguridad Fundamental (RLS)**:
+  - **Descripción**: Auditar y asegurar que todas las políticas de Row-Level Security en Supabase estén correctamente implementadas para proteger los datos de los usuarios.
+  - **Criterio**: Un usuario (cliente o comercio) NUNCA debe poder ver o modificar datos que no le pertenecen.
+
+## Fase 2: Mejoras de Gestión y Experiencia
+
+**Objetivo**: Enriquecer la plataforma con herramientas de gestión más robustas para los comercios y añadir funcionalidades clave para la comunicación.
+
+- **2.1. Gestión del Perfil del Comercio**:
+
+  - **Descripción**: Permitir a los comercios editar la información de su negocio (nombre, dirección), definir los servicios que ofrecen (nombre, precio, duración) y establecer sus horarios de trabajo.
+
+- **2.2. Notificaciones Transaccionales**:
+
+  - **Descripción**: Integrar un servicio de correo electrónico (ej. Supabase Functions con Resend/SendGrid) para enviar notificaciones automáticas para eventos clave: confirmación de reserva, recordatorio 24h antes, cancelación.
+
+- **2.3. Dashboard del Administrador (Básico)**:
+  - **Descripción**: Construir la primera versión del panel de administración para ver una lista de usuarios y comercios registrados, y poder desactivar cuentas.
+
+## Fase 3: Funcionalidades Avanzadas y Escalabilidad
+
+**Objetivo**: Añadir características que aumenten el valor para los comercios y mejoren la inteligencia de la plataforma.
+
+- **3.1. Gestión de Personal**:
+
+  - **Descripción**: Permitir que los comercios añadan múltiples miembros de personal. Las citas se podrán asignar a un miembro específico del personal, cada uno con su propio calendario de disponibilidad.
+
+- **3.2. Analíticas para Comercios**:
+
+  - **Descripción**: Crear un panel de analíticas simple para que los comercios vean datos como número de citas por mes, servicios más populares, etc.
+
+- **3.3. Reseñas y Calificaciones**:
+  - **Descripción**: Permitir que los clientes dejen una reseña y una calificación después de completar una cita. Las calificaciones serán visibles para otros clientes.
+
+## Consideraciones Futuras (Post-MVP)
+
+- Integración de pagos online.
+- Aplicación móvil (React Native o nativa).
+- Planes de suscripción para comercios (features premium).
+- Campañas de marketing por correo electrónico.

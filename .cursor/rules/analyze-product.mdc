@@ -1,0 +1,73 @@
+# Análisis del Producto: Snag - Sistema de Reservas SaaS
+
+## 1. Visión General y Objetivo Principal
+
+**Snag** es una plataforma de Software como Servicio (SaaS) diseñada para simplificar la gestión de citas y reservas para negocios de servicios. El objetivo es proporcionar una herramienta intuitiva para que los **Comercios** (peluquerías, entrenadores, etc.) administren sus calendarios y para que los **Clientes** reserven servicios de manera sencilla.
+
+## 2. Roles de Usuario y Flujos Clave
+
+La aplicación se estructura en torno a tres roles de usuario fundamentales:
+
+-   **Cliente**:
+    -   **Flujo**: Se registra, busca comercios, ve servicios/disponibilidad y reserva una cita.
+    -   **Dashboard**: Ve y gestiona sus próximas y pasadas citas.
+
+-   **Comercio**:
+    -   **Flujo**: Se registra, configura su perfil de negocio (servicios, horarios, personal), y gestiona las citas entrantes.
+    -   **Dashboard**: Visualiza un calendario de citas, gestiona la disponibilidad y ve análisis básicos.
+
+-   **Administrador**:
+    -   **Flujo**: Supervisa la plataforma, gestiona los comercios registrados y puede resolver disputas o problemas.
+    -   **Dashboard**: Ve estadísticas globales, gestiona usuarios y configuraciones de la plataforma.
+
+## 3. Arquitectura y Pila Tecnológica
+
+-   **Frontend**:
+    -   **Framework**: React con TypeScript.
+    -   **Bundler/Dev Server**: Vite.
+    -   **Estilos**: Tailwind CSS.
+    -   **Enrutamiento**: `react-router-dom`.
+    -   **Formularios**: `react-hook-form` con `zod` para validación.
+    -   **Pruebas**: Jest y React Testing Library.
+
+-   **Backend (BaaS - Backend as a Service)**:
+    -   **Proveedor**: **Supabase**.
+    -   **Servicios Utilizados**:
+        -   **Base de Datos**: PostgreSQL para almacenar usuarios, comercios, citas, etc.
+        -   **Autenticación**: Gestión de usuarios (registro, inicio de sesión) a través de Supabase Auth.
+        -   **APIs**: Interacción con la base de datos directamente desde el frontend usando la librería cliente de Supabase.
+        -   **Seguridad**: La autorización se debe gestionar mediante **Row-Level Security (RLS)** en Supabase para garantizar que los usuarios solo puedan acceder a sus propios datos.
+
+-   **Estructura del Proyecto**:
+    -   `src/components`: Componentes de UI reutilizables.
+    -   `src/pages`: Vistas principales de la aplicación (una por cada ruta).
+    -   `src/lib`: Lógica de negocio principal, incluyendo la interacción con Supabase (`supabaseClient.ts`), servicios (`appointmentService.ts`), y hooks personalizados (`useAuth.ts`).
+    -   `src/stores`: Gestión de estado global (ej. `authStore.ts`).
+    -   `supabase/migrations`: Definiciones de la estructura de la base de datos.
+
+## 4. Estado Actual del Proyecto
+
+El proyecto tiene una base sólida pero la funcionalidad principal aún está en desarrollo.
+
+-   **Completado**:
+    -   Estructura del proyecto y configuración inicial (Vite, TS, Tailwind).
+    -   Configuración del cliente de Supabase.
+    -   Sistema de enrutamiento básico.
+    -   Páginas de autenticación (Login, Register) con la lógica de `useAuth` conectada a Supabase.
+    -   Componentes de UI básicos y layout general.
+    -   Definición de la base de datos inicial a través de migraciones de Supabase.
+
+-   **Tareas Pendientes / Próximos Pasos**:
+    1.  **Dashboard del Comercio**: Implementar la vista de calendario, la capacidad de ver/gestionar citas y la configuración del perfil del negocio.
+    2.  **Flujo de Reserva del Cliente**: Crear la interfaz para que los clientes busquen comercios, seleccionen servicios y horarios, y confirmen una reserva.
+    3.  **Dashboard del Cliente**: Desarrollar la vista donde los clientes puedan ver y cancelar sus citas.
+    4.  **Dashboard del Administrador**: Construir las herramientas para la gestión de usuarios y comercios.
+    5.  **Notificaciones**: Integrar un sistema de notificaciones (ej. email o en la app) para confirmaciones y recordatorios de citas.
+    6.  **Seguridad (RLS)**: Auditar y completar las políticas de Row-Level Security en Supabase para asegurar la privacidad de los datos.
+    7.  **Pruebas**: Ampliar la cobertura de pruebas para incluir los flujos de negocio principales.
+
+## 5. Riesgos y Consideraciones
+
+-   **Seguridad de Supabase**: La correcta implementación de las políticas de RLS es **crítica**. Un error podría exponer datos de un comercio a otro.
+-   **Gestión de Estado**: A medida que la aplicación crezca, la gestión del estado de las citas y la disponibilidad en tiempo real puede volverse compleja. Se debe evaluar si la solución actual (`authStore` y hooks) es suficiente o si se necesita una librería más robusta.
+-   **Experiencia de Usuario (UX)**: Diseñar flujos de trabajo claros y eficientes para tres roles distintos en una sola aplicación requiere una atención cuidadosa al detalle.

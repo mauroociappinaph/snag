@@ -1,0 +1,34 @@
+name: Crear Issue de GitHub
+
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: 'Título de la Issue'
+        required: true
+        default: 'Título de ejemplo'
+      body:
+        description: 'Cuerpo de la Issue (en formato Markdown)'
+        required: true
+        default: 'Descripción detallada de la issue.'
+      labels:
+        description: 'Etiquetas separadas por comas (opcional)'
+        required: false
+        default: 'task,automated'
+
+jobs:
+  create_issue:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write # Permiso necesario para crear issues
+
+    steps:
+      - name: Crear Issue en GitHub
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh issue create \
+            --title "${{ github.event.inputs.title }}" \
+            --body "${{ github.event.inputs.body }}" \
+            --label "${{ github.event.inputs.labels }}"

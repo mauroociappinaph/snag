@@ -1,0 +1,33 @@
+name: 'Recordatorio: Verificar Políticas de Seguridad (RLS)'
+
+on:
+  workflow_dispatch: # Permite la ejecución manual
+
+jobs:
+  verify-rls-policies:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Paso 1: Iniciar sesión en la CLI de Supabase'
+        run: |
+          echo "Este es un recordatorio para iniciar sesión en Supabase."
+          echo "Ejecuta 'supabase login' en tu terminal local."
+
+      - name: 'Paso 2: Vincular el proyecto de Supabase'
+        run: |
+          echo "Asegúrate de que tu proyecto local esté vinculado al proyecto remoto."
+          echo "Navega a la carpeta 'supabase' y ejecuta 'supabase link --project-ref YOUR_PROJECT_ID'"
+
+      - name: 'Paso 3: Extraer el esquema de la base de datos'
+        run: |
+          echo "Usa la CLI para extraer las políticas de RLS actuales."
+          echo "Ejecuta 'supabase db pull' para generar un nuevo archivo de migración con el esquema remoto."
+
+      - name: 'Paso 4: Revisar las políticas de la tabla appointments'
+        run: |
+          echo "Abre el nuevo archivo de migración y busca las políticas para la tabla 'appointments'."
+          echo "Verifica que las políticas de SELECT y UPDATE para el rol 'business' sean correctas."
+          echo "Si no existen o son incorrectas, créalas o modifícalas en el panel de Supabase y repite el paso 3."
+
+      - name: 'Tarea Completada'
+        run: |
+          echo "Una vez que las políticas estén verificadas y correctas, puedes cerrar la Issue correspondiente en GitHub."

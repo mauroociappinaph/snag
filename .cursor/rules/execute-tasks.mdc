@@ -1,0 +1,117 @@
+---
+alwaysApply: false
+---
+
+# Lista de Tareas: Implementar el Dashboard del Comercio
+
+Este documento desglosa la especificación técnica en una secuencia de tareas ejecutables. El objetivo es completar la feature del **Dashboard del Comercio**.
+
+### Fase 1: Capa de Datos y Lógica de Negocio
+
+- [ ] **1. Actualizar Tipos de Datos**:
+
+  - **Archivo**: `src/lib/types/reservation.types.ts`.
+  - **Acción**: Asegurarse de que el tipo `Appointment` contenga los campos `status`, `business_id`, y una estructura para los datos del cliente (ej. `client: { name: string, email: string }`).
+
+- [ ] **2. Implementar Servicios de Citas**:
+
+  - **Archivo**: `src/lib/services/appointmentService.ts`.
+  - **Acción**: Añadir las siguientes funciones asíncronas:
+    - `getAppointmentsByBusinessId(businessId: string)`: Debe obtener las citas de Supabase, incluyendo los datos del cliente.
+    - `updateAppointmentStatus(appointmentId: string, newStatus: string)`: Debe actualizar el estado de una cita específica.
+
+- [ ] **3. Verificar Políticas de Seguridad (RLS) en Supabase**:
+
+  - **Acción**: Acceder al panel de Supabase y confirmar que existen políticas de RLS en la tabla `appointments` que:
+    - Permiten a un comercio leer (`SELECT`) **solo** sus propias citas.
+    - Permiten a un comercio actualizar (`UPDATE`) **solo** sus propias citas.
+
+- [ ] **4. Crear Hook de Citas**:
+  - **Archivo**: `src/lib/hooks/useAppointments.ts`.
+  - **Acción**: Crear un hook que utilice las funciones del `appointmentService` para obtener y gestionar la lista de citas, exponiendo los estados `data`, `loading`, y `error`.
+
+### Fase 2: Desarrollo de Componentes de UI
+
+- [ ] **5. Crear Componente `AppointmentListItem`**:
+
+  - **Archivo**: `src/components/dashboard/AppointmentListItem.tsx`.
+  - **Acción**: Crear un componente que reciba una cita como prop y muestre la información clave (cliente, servicio, hora, estado). Debe manejar un evento `onClick`.
+
+- [ ] **6. Crear Componente `AppointmentList`**:
+
+  - **Archivo**: `src/components/dashboard/AppointmentList.tsx`.
+  - **Acción**: Crear un componente que reciba un array de citas y renderice una lista de componentes `AppointmentListItem`.
+
+- [ ] **7. Crear Modal de Detalle de Cita**:
+  - **Archivo**: `src/components/dashboard/AppointmentDetailModal.tsx`.
+  - **Acción**: Crear un modal que reciba una cita seleccionada, muestre todos sus detalles y contenga la lógica (botones, dropdown) para invocar la función de actualizar estado.
+
+### Fase 3: Integración y Pruebas
+
+- [ ] **8. Integrar en la Página del Dashboard**:
+
+  - **Archivo**: `src/pages/BusinessDashboardPage.tsx`.
+  - **Acción**: Utilizar el hook `useAppointments` para obtener los datos. Renderizar el `LoadingSpinner`, mensajes de error, o la `AppointmentList`. Gestionar la lógica para abrir el `AppointmentDetailModal` cuando se selecciona una cita.
+
+- [ ] **9. Escribir Pruebas Unitarias**:
+
+  - **Acción**: Crear archivos de prueba para los nuevos componentes de UI y para las funciones del `appointmentService` (usando mocks).
+
+- [ ] **10. Realizar Pruebas Manuales de Integración**:
+  - **Acción**: Iniciar sesión como un usuario de tipo "Comercio". Verificar que solo se vean sus citas. Probar la actualización de estado y confirmar que el cambio persiste después de recargar la página.# Lista de Tareas: Implementar el Dashboard del Comercio
+
+Este documento desglosa la especificación técnica en una secuencia de tareas ejecutables. El objetivo es completar la feature del **Dashboard del Comercio**.
+
+### Fase 1: Capa de Datos y Lógica de Negocio
+
+- [ ] **1. Actualizar Tipos de Datos**:
+
+  - **Archivo**: `src/lib/types/reservation.types.ts`.
+  - **Acción**: Asegurarse de que el tipo `Appointment` contenga los campos `status`, `business_id`, y una estructura para los datos del cliente (ej. `client: { name: string, email: string }`).
+
+- [ ] **2. Implementar Servicios de Citas**:
+
+  - **Archivo**: `src/lib/services/appointmentService.ts`.
+  - **Acción**: Añadir las siguientes funciones asíncronas:
+    - `getAppointmentsByBusinessId(businessId: string)`: Debe obtener las citas de Supabase, incluyendo los datos del cliente.
+    - `updateAppointmentStatus(appointmentId: string, newStatus: string)`: Debe actualizar el estado de una cita específica.
+
+- [ ] **3. Verificar Políticas de Seguridad (RLS) en Supabase**:
+
+  - **Acción**: Acceder al panel de Supabase y confirmar que existen políticas de RLS en la tabla `appointments` que:
+    - Permiten a un comercio leer (`SELECT`) **solo** sus propias citas.
+    - Permiten a un comercio actualizar (`UPDATE`) **solo** sus propias citas.
+
+- [ ] **4. Crear Hook de Citas**:
+  - **Archivo**: `src/lib/hooks/useAppointments.ts`.
+  - **Acción**: Crear un hook que utilice las funciones del `appointmentService` para obtener y gestionar la lista de citas, exponiendo los estados `data`, `loading`, y `error`.
+
+### Fase 2: Desarrollo de Componentes de UI
+
+- [ ] **5. Crear Componente `AppointmentListItem`**:
+
+  - **Archivo**: `src/components/dashboard/AppointmentListItem.tsx`.
+  - **Acción**: Crear un componente que reciba una cita como prop y muestre la información clave (cliente, servicio, hora, estado). Debe manejar un evento `onClick`.
+
+- [ ] **6. Crear Componente `AppointmentList`**:
+
+  - **Archivo**: `src/components/dashboard/AppointmentList.tsx`.
+  - **Acción**: Crear un componente que reciba un array de citas y renderice una lista de componentes `AppointmentListItem`.
+
+- [ ] **7. Crear Modal de Detalle de Cita**:
+  - **Archivo**: `src/components/dashboard/AppointmentDetailModal.tsx`.
+  - **Acción**: Crear un modal que reciba una cita seleccionada, muestre todos sus detalles y contenga la lógica (botones, dropdown) para invocar la función de actualizar estado.
+
+### Fase 3: Integración y Pruebas
+
+- [ ] **8. Integrar en la Página del Dashboard**:
+
+  - **Archivo**: `src/pages/BusinessDashboardPage.tsx`.
+  - **Acción**: Utilizar el hook `useAppointments` para obtener los datos. Renderizar el `LoadingSpinner`, mensajes de error, o la `AppointmentList`. Gestionar la lógica para abrir el `AppointmentDetailModal` cuando se selecciona una cita.
+
+- [ ] **9. Escribir Pruebas Unitarias**:
+
+  - **Acción**: Crear archivos de prueba para los nuevos componentes de UI y para las funciones del `appointmentService` (usando mocks).
+
+- [ ] **10. Realizar Pruebas Manuales de Integración**:
+  - **Acción**: Iniciar sesión como un usuario de tipo "Comercio". Verificar que solo se vean sus citas. Probar la actualización de estado y confirmar que el cambio persiste después de recargar la página.

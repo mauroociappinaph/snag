@@ -1,0 +1,86 @@
+# Especificación Técnica: Dashboard del Comercio
+
+## 1. Feature y Objetivo
+
+**Feature**: Implementar el Dashboard del Comercio (`BusinessDashboardPage`).
+
+**Objetivo**: Proporcionar a los usuarios con el rol de "Comercio" una interfaz central para visualizar y gestionar las citas de su negocio. Esta es la funcionalidad principal para este rol de usuario.
+
+## 2. User Stories y Criterios de Aceptación
+
+-   **User Story 1**: "Como propietario de un comercio, quiero ver una lista de todas mis próximas citas en un solo lugar para poder planificar mi jornada laboral de manera eficiente."
+-   **User Story 2**: "Como propietario de un comercio, quiero poder ver los detalles de una cita específica (quién la reservó, qué servicio y a qué hora) para estar preparado para el cliente."
+-   **User Story 3**: "Como propietario de un comercio, quiero poder cambiar el estado de una cita (ej. de 'Pendiente' a 'Confirmada' o 'Completada') para mantener mis registros actualizados."
+
+### Criterios de Aceptación:
+
+1.  Un usuario con el rol 'Business' que inicia sesión es redirigido a la ruta `/business-dashboard`.
+2.  El dashboard muestra una lista de citas que pertenecen **únicamente** a su comercio.
+3.  La lista de citas muestra información clave: nombre del cliente, servicio, fecha/hora y estado.
+4.  El usuario puede hacer clic en una cita para ver un modal o panel con detalles adicionales.
+5.  El usuario puede actualizar el estado de una cita, y el cambio se refleja en la interfaz.
+6.  Se muestra un estado de carga (`LoadingSpinner`) mientras se obtienen las citas.
+7.  Se muestra un mensaje apropiado si no hay citas para mostrar.
+
+## 3. Plan de Implementación Técnica
+
+### a. Archivos a Crear / Modificar
+
+-   **Página Principal (Modificar)**:
+    -   `src/pages/BusinessDashboardPage.tsx`: Orquestará la obtención de datos y renderizará los componentes de la UI.
+
+-   **Componentes (Nuevos)**:
+    -   `src/components/dashboard/AppointmentList.tsx`: Renderizará la lista de citas. Recibirá las citas como props.
+    -   `src/components/dashboard/AppointmentListItem.tsx`: Representará una sola cita en la lista, manejando la lógica de selección.
+    -   `src/components/dashboard/AppointmentDetailModal.tsx`: Un modal para mostrar los detalles completos de la cita seleccionada y permitir cambios de estado.
+
+-   **Servicios (Modificar)**:
+    -   `src/lib/services/appointmentService.ts`: Añadir nuevas funciones para interactuar con Supabase:
+        -   `getAppointmentsByBusinessId(businessId: string)`: Obtiene todas las citas para un comercio específico.
+        -   `updateAppointmentStatus(appointmentId: string, status: string)`: Actualiza el estado de una cita.
+
+-   **Hooks (Modificar/Crear)**:
+    -   `src/lib/hooks/useAppointments.ts`: Actualizar o crear este hook para encapsular la lógica de obtención y gestión del estado de las citas para el dashboard.
+
+-   **Tipos (Asegurar/Modificar)**:
+    -   `src/lib/types/reservation.types.ts`: Asegurar que el tipo `Appointment` incluya un campo `status` y los datos del cliente.
+
+### b. Interacción con Supabase
+
+-   **Obtención de Datos (`getAppointmentsByBusinessId`)**:
+    -   La función realizará una consulta a la tabla `appointments`.
+    -   Debe incluir un `join` para obtener el nombre del cliente desde la tabla `users` (o una tabla `profiles`).
+    -   **Consulta Ejemplo**: `supabase.from('appointments').select('*, client:profiles(*)').eq('business_id', businessId)`
+
+-   **Actualización de Datos (`updateAppointmentStatus`)**:
+    -   La función realizará una operación de `update` en la tabla `appointments`.
+    -   **Consulta Ejemplo**: `supabase.from('appointments').update({ status: newStatus }).eq('id', appointmentId)`
+
+-   **Seguridad (Row-Level Security - RLS)**:
+    -   **¡CRÍTICO!** Se deben crear o verificar las políticas de RLS en la tabla `appointments` en Supabase.
+    -   **Política de `SELECT`**: Un usuario solo puede ver las citas si su `id` de comercio coincide con el `business_id` de la cita.
+    -   **Política de `UPDATE`**: Un usuario solo puede actualizar una cita si su `id` de comercio coincide con el `business_id` de la cita.
+
+### c. Lógica del Frontend
+
+1.  **`BusinessDashboardPage.tsx`**:
+    -   Obtendrá el `id` del usuario autenticado desde el `useAuth` hook.
+    -   Usará un `useEffect` para llamar a `getAppointmentsByBusinessId` al montar el componente.
+    -   Gestionará los estados de `loading`, `error` y `data` (la lista de citas).
+    -   Gestionará el estado de la cita seleccionada para pasarla al modal de detalle.
+
+2.  **`AppointmentList.tsx`**:
+    -   Recibirá `appointments` como prop y las mapeará para renderizar componentes `AppointmentListItem`.
+
+3.  **`AppointmentDetailModal.tsx`**:
+    -   Recibirá la `selectedAppointment` como prop.
+    -   Mostrará todos los detalles de la cita.
+    -   Contendrá un formulario o botones para cambiar el `status` y llamará a la función `updateAppointmentStatus` del servicio.
+
+## 4. Plan de Pruebas
+
+-   **Unitarias**:
+    -   Probar las funciones de `appointmentService` (`get...`, `update...`) usando un cliente de Supabase mockeado.
+    -   Probar los componentes de UI (`AppointmentList`, `AppointmentDetailModal`) con datos de prueba (props mockeadas) para verificar que renderizan correctamente.
+-   **Integración**:
+    -   Probar la página `BusinessDashboardPage` completa para asegurar que obtiene los datos correctamente y que la interacción del usuario (seleccionar, actualizar) funciona de principio a fin.
