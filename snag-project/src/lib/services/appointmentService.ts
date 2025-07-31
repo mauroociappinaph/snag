@@ -2,7 +2,7 @@ import { supabase } from '../supabase/supabaseClient';
 import type { Database } from '../types/database.types';
 import type { AppointmentStatus } from '../types/reservation.types';
 
-type AppointmentInsert = Database['public']['Tables']['appointments']['Insert'];
+type AppointmentInsert = Database['public']['Tables']['reservations']['Insert'];
 
 /**
  * Service object for handling appointment-related database operations.
@@ -15,7 +15,7 @@ export const appointmentService = {
    */
   async create(appointment: AppointmentInsert) {
     const { data, error } = await supabase
-      .from('appointments')
+      .from('reservations')
       .insert(appointment)
       .select()
       .single();
@@ -31,7 +31,7 @@ export const appointmentService = {
    */
   async getByClientId(clientId: string) {
     const { data, error } = await supabase
-      .from('appointments')
+      .from('reservations')
       .select(`
         *,
         business:businesses(id, name, email, phone),
@@ -52,7 +52,7 @@ export const appointmentService = {
    */
   async getByBusinessId(businessId: string) {
     const { data, error } = await supabase
-      .from('appointments')
+      .from('reservations')
       .select(`
         *,
         client:profiles!appointments_client_id_fkey(id, full_name, email),
@@ -82,7 +82,7 @@ export const appointmentService = {
     // First, verify that the user is authorized to update this appointment.
     // We only fetch the IDs needed for the check for efficiency.
     const { data: appointment, error: fetchError } = await supabase
-      .from('appointments')
+      .from('reservations')
       .select('client_id, business_id')
       .eq('id', appointmentId)
       .single();
@@ -103,7 +103,7 @@ export const appointmentService = {
 
     // If authorized, proceed with the update.
     const { data, error } = await supabase
-      .from('appointments')
+      .from('reservations')
       .update({ status })
       .eq('id', appointmentId)
       .select()
@@ -123,7 +123,7 @@ export const appointmentService = {
   async delete(appointmentId: string, userId: string, userRole: string) {
     // First, verify that the user is authorized to delete this appointment.
     const { data: appointment, error: fetchError } = await supabase
-      .from('appointments')
+      .from('reservations')
       .select('client_id, business_id')
       .eq('id', appointmentId)
       .single();
@@ -144,7 +144,7 @@ export const appointmentService = {
 
     // If authorized, proceed with the deletion.
     const { error } = await supabase
-      .from('appointments')
+      .from('reservations')
       .delete()
       .eq('id', appointmentId);
 
@@ -183,7 +183,7 @@ export const appointmentService = {
 
     // Check for any conflicting appointments that are not cancelled.
     const { data: conflicts, error } = await supabase
-      .from('appointments')
+      .from('reservations')
       .select('id') // We only need to know if a conflict exists, not the data.
       .eq('business_id', businessId)
       .eq('date', date)
